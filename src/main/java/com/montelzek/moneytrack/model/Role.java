@@ -14,15 +14,12 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, unique = true)
+    private ERole name;
 
-    @Column(name = "role_name")
-    private String roleName;
-
-    public Role(User user, String roleName) {
-        this.user = user;
-        this.roleName = roleName;
+    public enum ERole {
+        ROLE_USER,
+        ROLE_ADMIN
     }
 }
