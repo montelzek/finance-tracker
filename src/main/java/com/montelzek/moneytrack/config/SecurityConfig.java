@@ -24,6 +24,10 @@ public class SecurityConfig {
                         .successHandler((request, response, authentication) -> response.setStatus(200))
                         .failureHandler((request, response, exception) -> response.setStatus(401))
                 )
-
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(200))
+                );
+        return httpSecurity.build();
     }
 }
