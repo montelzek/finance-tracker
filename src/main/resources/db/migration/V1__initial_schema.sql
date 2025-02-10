@@ -1,16 +1,21 @@
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id BIGINT PRIMARY KEY,
+    email VARCHAR(50) NOT NULL,
+    password VARCHAR(120) NOT NULL,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT email_unique UNIQUE (email)
 );
 
 CREATE TABLE roles (
     id SERIAL PRIMARY KEY,
-    user_id INT,
-    role_name VARCHAR(50),
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    name VARCHAR(20) NOT NULL UNIQUE
 );
+
+INSERT INTO roles (name)
+VALUES
+    ('ROLE_USER'),
+    ('ROLE_PREMIUM'),
+    ('ROLE_ADMIN')
+ON CONFLICT (name) DO NOTHING;
