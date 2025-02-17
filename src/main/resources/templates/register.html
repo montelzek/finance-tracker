@@ -3,27 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <title>Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
 <body>
-    <h1>Register</h1>
-    <form th:action="@{/register}" th:object="${user}" method="post">
-        <div>
-            First name: <input type="text" th:field="*{firstName}">
-        </div>
-        <div>
-            Last name: <input type="text" th:field="*{lastName}">
-        </div>
-        <div>
-            E-mail: <input type="email" th:field="*{email}">
-            <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
-        </div>
-        <div>
-            Password: <input type="password" th:field="*{password}">
-        </div>
-        <button type="submit">Register</button>
-    </form>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="text-center mb-4">Sign Up</h2>
+                        <form th:action="@{/register}" th:object="${user}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label" for="firstName">First name: </label>
+                                <input type="text" id="firstName" class="form-control" th:field="*{firstName}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="lastName">Last name: </label>
+                                <input type="text" id="lastName" class="form-control" th:field="*{lastName}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="email">Email: </label>
+                                <input type="email" id="email" class="form-control" th:field="*{email}" required>
+                                <div class="text-danger" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="password">Password: </label>
+                                <input type="password" id="password" class="form-control" th:field="*{password}" required>
+                            </div>
+                            <div class="d-grid text-center">
+                                <button type="submit" class="btn btn-primary">Register</button>
+                            </div>
 
-    Already have an account? <a th:href="@{login}">Log in now</a>
-
+                        </form>
+                        <p class="text-center mt-3">
+                            Already have an account?
+                            <a th:href="@{login}">Sign in now</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
