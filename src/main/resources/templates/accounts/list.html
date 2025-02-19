@@ -57,10 +57,63 @@
 
             <div class="col-md-9 col-lg-10 main-content">
                 <h1>Account list</h1>
-
-
+                Current user ID: <span th:text="${id}"></span>
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingAccountModal">
+                    Add account
+                </button>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="addingAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Add account</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/accounts/save}" th:object="${account}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label" for="name">Name: </label>
+                            <input type="text" id="name" class="form-control" th:field="*{name}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="type">Choose account type: </label>
+                            <select class="form-select mb-4 w-25" id="type" th:field="*{accountType}">
+                                <option th:each="type : ${accountTypes}"
+                                        th:value="${type}"
+                                        th:text="${type.name()}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="balance">Balance: </label>
+                            <input type="number" step="0.01" id="balance" class="form-control" th:field="*{balance}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="currency">Choose currency: </label>
+                            <select class="form-select mb-4 w-25" id="currency" th:field="*{currency}">
+                                <option th:each="currency : ${currencies}"
+                                        th:value="${currency}"
+                                        th:text="${currency.name()}">
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-dark">Add account</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
 </body>
 </html>
