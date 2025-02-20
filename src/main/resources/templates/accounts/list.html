@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Accounts</title>
@@ -59,8 +59,27 @@
                 <h1>Account list</h1>
                 Current user ID: <span th:text="${id}"></span>
                 <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingAccountModal">
+                    <i class="bi bi-plus-lg me-2"></i>
                     Add account
                 </button>
+                <table class="table text-center table-bordered table-hover mt-5">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tempAccount : ${accounts}">
+                            <td class="align-middle" th:text="${tempAccount.name}"></td>
+                            <td class="align-middle" th:text="${tempAccount.accountType}"></td>
+                            <td class="align-middle" th:text="${tempAccount.balance} + ' ' + ${tempAccount.currency}"
+                                th:classappend="${tempAccount.balance > 0 ? 'text-success' : 'text-danger'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
             </div>
         </div>
     </div>
@@ -79,29 +98,30 @@
                             <label class="form-label" for="name">Name: </label>
                             <input type="text" id="name" class="form-control" th:field="*{name}">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="type">Choose account type: </label>
-                            <select class="form-select mb-4 w-25" id="type" th:field="*{accountType}">
-                                <option th:each="type : ${accountTypes}"
-                                        th:value="${type}"
-                                        th:text="${type.name()}">
-                                </option>
-                            </select>
+                        <div class="d-flex gap-5">
+                            <div class="w-50">
+                                <label class="form-label" for="type">Choose account type: </label>
+                                <select class="form-select mb-4 w-100" id="type" th:field="*{accountType}">
+                                    <option th:each="type : ${accountTypes}"
+                                            th:value="${type}"
+                                            th:text="${type.name()}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="w-50">
+                                <label class="form-label" for="currency">Choose currency: </label>
+                                <select class="form-select mb-4 w-50" id="currency" th:field="*{currency}">
+                                    <option th:each="currency : ${currencies}"
+                                            th:value="${currency}"
+                                            th:text="${currency.name()}">
+                                    </option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-5">
                             <label class="form-label" for="balance">Balance: </label>
                             <input type="number" step="0.01" id="balance" class="form-control" th:field="*{balance}">
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="currency">Choose currency: </label>
-                            <select class="form-select mb-4 w-25" id="currency" th:field="*{currency}">
-                                <option th:each="currency : ${currencies}"
-                                        th:value="${currency}"
-                                        th:text="${currency.name()}">
-                                </option>
-                            </select>
-                        </div>
-
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-dark">Add account</button>
