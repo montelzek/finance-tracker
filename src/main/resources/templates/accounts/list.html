@@ -56,25 +56,30 @@
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h1>Account list</h1>
-                Current user ID: <span th:text="${id}"></span>
-                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingAccountModal">
-                    <i class="bi bi-plus-lg me-2"></i>
-                    Add account
-                </button>
-                <table class="table text-center table-bordered table-hover mt-5">
-                    <thead class="table-dark">
+                <div class="d-flex gap-4 align-items-center mb-4">
+                    <h2 class="mb-0">Account list</h2>
+                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingAccountModal">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Add account
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table text-center table-bordered table-hover mt-3">
+                        <thead class="table-dark">
                         <tr>
                             <th>Name</th>
                             <th>Type</th>
                             <th>Balance</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         <tr th:each="tempAccount : ${accounts}">
                             <td class="align-middle text-start">
                                 <a th:data-id="${tempAccount.id}" class="btn btn-sm btn-outline-dark me-2 edit-btn">
                                     <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{accounts/delete(accountId=${tempAccount.id})}" class="btn btn-sm btn-outline-dark me-3">
+                                    <i class="bi bi-trash"></i>
                                 </a>
                                 <span th:text="${tempAccount.name}"></span>
                             </td>
@@ -82,9 +87,9 @@
                             <td class="align-middle" th:text="${tempAccount.balance} + ' ' + ${tempAccount.currency}"
                                 th:classappend="${tempAccount.balance > 0 ? 'text-success' : 'text-danger'}"></td>
                         </tr>
-                    </tbody>
-                </table>
-
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
