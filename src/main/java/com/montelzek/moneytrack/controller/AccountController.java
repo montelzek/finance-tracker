@@ -37,7 +37,6 @@ public class AccountController {
         model.addAttribute("account", accountDTO);
         model.addAttribute("accountTypes", accountTypes);
         model.addAttribute("currencies", currencies);
-        model.addAttribute("id", id);
         model.addAttribute("accounts", accounts);
 
         return "accounts/list";
@@ -86,6 +85,12 @@ public class AccountController {
 
 
         accountService.save(account);
+        return "redirect:/accounts";
+    }
+
+    @GetMapping("/delete")
+    public String deleteAccount(@RequestParam("accountId") Long id) {
+        accountService.deleteById(id);
         return "redirect:/accounts";
     }
 
