@@ -57,6 +57,9 @@ public class User {
         createdAt = LocalDateTime.now();
     }
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Account> accounts;
+
     public User(String email, String password, String firstName, String lastName) {
         this.email = email;
         this.password = password;

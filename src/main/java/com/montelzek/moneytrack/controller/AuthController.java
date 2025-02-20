@@ -1,5 +1,6 @@
 package com.montelzek.moneytrack.controller;
 
+import com.montelzek.moneytrack.dto.UserRegisterDTO;
 import com.montelzek.moneytrack.model.Role;
 import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.RoleRepository;
@@ -34,29 +35,35 @@ public class AuthController {
 
     @GetMapping("/register")
     public String showRegistrationForm(Model model) {
-        model.addAttribute("user", new User());
+        model.addAttribute("user", new UserRegisterDTO());
         return "register";
     }
 
     @PostMapping("/register")
-    public String saveUser(@ModelAttribute("user") User user, BindingResult result) {
+    public String saveUser(@ModelAttribute("user") UserRegisterDTO userRegisterDTO, BindingResult result) {
         if (result.hasErrors()) {
             return "register";
         }
 
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmail(userRegisterDTO.getEmail())) {
             result.rejectValue("email", "error.email", "Email already exists");
             return "register";
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User(
+                userRegisterDTO.getEmail(),
+                passwordEncoder.encode(userRegisterDTO.getPassword()),
+                userRegisterDTO.getFirstName(),
+                userRegisterDTO.getLastName()
+        );
+
         Role userRole = roleRepository.findByName(Role.ERole.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Role not found."));
         user.setRoles(Collections.singleton(userRole));
 
         userRepository.save(user);
 
-        return "redirect:/login?registered";
+        return "redirect:/login?registered=true";
     }
 
     @GetMapping("/dashboard")
