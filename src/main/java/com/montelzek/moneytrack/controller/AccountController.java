@@ -1,5 +1,6 @@
 package com.montelzek.moneytrack.controller;
 
+import com.montelzek.moneytrack.dto.AccountDTO;
 import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.UserRepository;
@@ -7,10 +8,7 @@ import com.montelzek.moneytrack.service.AccountService;
 import com.montelzek.moneytrack.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,12 +29,12 @@ public class AccountController {
     public String listAccount(Model model) {
 
         Long id = userService.getCurrentUserId();
-        Account account = new Account();
+        AccountDTO accountDTO = new AccountDTO();
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<Account.AccountType> accountTypes = Arrays.asList(Account.AccountType.values());
         List<Account.Currency> currencies = Arrays.asList(Account.Currency.values());
 
-        model.addAttribute("account", account);
+        model.addAttribute("account", accountDTO);
         model.addAttribute("accountTypes", accountTypes);
         model.addAttribute("currencies", currencies);
         model.addAttribute("id", id);
@@ -45,18 +43,50 @@ public class AccountController {
         return "accounts/list";
     }
 
+    // Endpoint to fetch account data for editing
+
+    @GetMapping("/edit/{id}")
+    @ResponseBody
+    public AccountDTO getAccountForEdit(@PathVariable Long id) {
+
+        Account account = accountService.findById(id);
+
+        AccountDTO accountDTO = new AccountDTO();
+        accountDTO.setId(account.getId());
+        accountDTO.setName(account.getName());
+        accountDTO.setAccountType(account.getAccountType());
+        accountDTO.setBalance(account.getBalance());
+        accountDTO.setCurrency(account.getCurrency());
+        return accountDTO;
+    }
+
     @PostMapping("/save")
-    public String addAccount(@ModelAttribute("account") Account account) {
+    public String saveAccount(@ModelAttribute("account") AccountDTO accountDTO) {
 
         Long userId = userService.getCurrentUserId();
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
-        account.setUser(user);
+
+        Account account;
+        if (accountDTO.getId() != null) {
+            account = accountService.findById(accountDTO.getId());
+            account.setName(accountDTO.getName());
+            account.setAccountType(accountDTO.getAccountType());
+            account.setBalance(accountDTO.getBalance());
+            account.setCurrency(accountDTO.getCurrency());
+        } else {
+            account = new Account(
+                    accountDTO.getName(),
+                    accountDTO.getAccountType(),
+                    accountDTO.getBalance(),
+                    accountDTO.getCurrency()
+            );
+            account.setUser(user);
+        }
+
 
         accountService.save(account);
-
         return "redirect:/accounts";
     }
-
 
 }
