@@ -72,7 +72,12 @@
                     </thead>
                     <tbody>
                         <tr th:each="tempAccount : ${accounts}">
-                            <td class="align-middle" th:text="${tempAccount.name}"></td>
+                            <td class="align-middle text-start">
+                                <a th:data-id="${tempAccount.id}" class="btn btn-sm btn-outline-dark me-2 edit-btn">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <span th:text="${tempAccount.name}"></span>
+                            </td>
                             <td class="align-middle" th:text="${tempAccount.accountType}"></td>
                             <td class="align-middle" th:text="${tempAccount.balance} + ' ' + ${tempAccount.currency}"
                                 th:classappend="${tempAccount.balance > 0 ? 'text-success' : 'text-danger'}"></td>
@@ -96,12 +101,12 @@
                     <form th:action="@{/accounts/save}" th:object="${account}" method="post">
                         <div class="mb-3">
                             <label class="form-label" for="name">Name: </label>
-                            <input type="text" id="name" class="form-control" th:field="*{name}">
+                            <input type="text" id="name" class="form-control" th:field="*{name}" required>
                         </div>
                         <div class="d-flex gap-5">
                             <div class="w-50">
                                 <label class="form-label" for="type">Choose account type: </label>
-                                <select class="form-select mb-4 w-100" id="type" th:field="*{accountType}">
+                                <select class="form-select mb-4 w-100" id="type" th:field="*{accountType}" required>
                                     <option th:each="type : ${accountTypes}"
                                             th:value="${type}"
                                             th:text="${type.name()}">
@@ -110,7 +115,7 @@
                             </div>
                             <div class="w-50">
                                 <label class="form-label" for="currency">Choose currency: </label>
-                                <select class="form-select mb-4 w-50" id="currency" th:field="*{currency}">
+                                <select class="form-select mb-4 w-50" id="currency" th:field="*{currency}" required>
                                     <option th:each="currency : ${currencies}"
                                             th:value="${currency}"
                                             th:text="${currency.name()}">
@@ -120,7 +125,7 @@
                         </div>
                         <div class="mb-5">
                             <label class="form-label" for="balance">Balance: </label>
-                            <input type="number" step="0.01" id="balance" class="form-control" th:field="*{balance}">
+                            <input type="number" step="0.01" id="balance" class="form-control" th:field="*{balance}" required>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -132,8 +137,58 @@
         </div>
     </div>
 
+    <div class="modal fade" id="editAccountModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5">Edit Account</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form th:action="@{/accounts/save}" th:object="${account}" method="post">
+                        <input type="hidden" th:field="*{id}" id="accountId">
+                        <div class="mb-3">
+                            <label class="form-label" for="nameEdit">Name: </label>
+                            <input type="text" id="nameEdit" class="form-control" th:field="*{name}" required>
+                        </div>
+                        <div class="d-flex gap-5">
+                            <div class="w-50">
+                                <label class="form-label" for="typeEdit">Account Type: </label>
+                                <select class="form-select mb-4 w-100" id="typeEdit" th:field="*{accountType}" required>
+                                    <option th:each="type : ${accountTypes}"
+                                            th:value="${type}"
+                                            th:text="${type.name()}"></option>
+                                </select>
+                            </div>
+                            <div class="w-50">
+                                <label class="form-label" for="currencyEdit">Currency: </label>
+                                <select class="form-select mb-4 w-50" id="currencyEdit" th:field="*{currency}" required>
+                                    <option th:each="currency : ${currencies}"
+                                            th:value="${currency}"
+                                            th:text="${currency.name()}"></option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-5">
+                            <label class="form-label" for="balanceEdit">Balance: </label>
+                            <input type="number" step="0.01" id="balanceEdit" class="form-control" th:field="*{balance}" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-dark">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
+
+    <script src="/js/edit-account.js"></script>
 </body>
 </html>
