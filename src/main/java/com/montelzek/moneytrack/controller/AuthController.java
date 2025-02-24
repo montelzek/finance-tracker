@@ -5,6 +5,7 @@ import com.montelzek.moneytrack.model.Role;
 import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.RoleRepository;
 import com.montelzek.moneytrack.repository.UserRepository;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -40,7 +41,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String saveUser(@ModelAttribute("user") UserRegisterDTO userRegisterDTO, BindingResult result) {
+    public String saveUser(@Valid @ModelAttribute("user") UserRegisterDTO userRegisterDTO, BindingResult result) {
         if (result.hasErrors()) {
             return "register";
         }
