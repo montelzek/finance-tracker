@@ -106,7 +106,8 @@
                     <form th:action="@{/accounts/save}" th:object="${account}" method="post">
                         <div class="mb-3">
                             <label class="form-label" for="name">Name: </label>
-                            <input type="text" id="name" class="form-control" th:field="*{name}" required>
+                            <input type="text" id="name" class="form-control" th:field="*{name}" required maxlength="120">
+                            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
                         </div>
                         <div class="d-flex gap-5">
                             <div class="w-50">
@@ -117,6 +118,7 @@
                                             th:text="${type.name()}">
                                     </option>
                                 </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('accountType')}" th:errors="*{accountType}"></div>
                             </div>
                             <div class="w-50">
                                 <label class="form-label" for="currency">Choose currency: </label>
@@ -126,11 +128,13 @@
                                             th:text="${currency.name()}">
                                     </option>
                                 </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('currency')}" th:errors="*{currency}"></div>
                             </div>
                         </div>
                         <div class="mb-5">
                             <label class="form-label" for="balance">Balance: </label>
                             <input type="number" step="0.01" id="balance" class="form-control" th:field="*{balance}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('balance')}" th:errors="*{balance}"></div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -155,7 +159,8 @@
                         <input type="hidden" th:field="*{id}" id="accountId">
                         <div class="mb-3">
                             <label class="form-label" for="nameEdit">Name: </label>
-                            <input type="text" id="nameEdit" class="form-control" th:field="*{name}" required>
+                            <input type="text" id="nameEdit" class="form-control" th:field="*{name}" required maxlength="120">
+                            <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
                         </div>
                         <div class="d-flex gap-5">
                             <div class="w-50">
@@ -165,6 +170,7 @@
                                             th:value="${type}"
                                             th:text="${type.name()}"></option>
                                 </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('accountType')}" th:errors="*{accountType}"></div>
                             </div>
                             <div class="w-50">
                                 <label class="form-label" for="currencyEdit">Currency: </label>
@@ -173,11 +179,13 @@
                                             th:value="${currency}"
                                             th:text="${currency.name()}"></option>
                                 </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('currency')}" th:errors="*{currency}"></div>
                             </div>
                         </div>
                         <div class="mb-5">
                             <label class="form-label" for="balanceEdit">Balance: </label>
                             <input type="number" step="0.01" id="balanceEdit" class="form-control" th:field="*{balance}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('balance')}" th:errors="*{balance}"></div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
