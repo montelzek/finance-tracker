@@ -22,14 +22,10 @@ public class Category {
     @NotBlank
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    private CategoryType type;
+    @NotBlank
+    private String type;
 
     @OneToMany(mappedBy = "category")
     private List<Transaction> transactions;
 
-    public enum CategoryType {
-        INCOME,
-        EXPENSE
-    }
 }
