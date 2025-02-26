@@ -12,10 +12,7 @@ import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -74,6 +71,24 @@ public class TransactionController {
 
         transactionService.save(transaction);
 
+        return "redirect:/transactions";
+    }
+
+    @GetMapping("/delete")
+    public String deleteAccount(@RequestParam("transactionId") Long id) {
+
+        Transaction transaction = transactionService.findById(id);
+        Account account = transaction.getAccount();
+
+        if (transaction.getCategory().getType().equals("INCOME")) {
+            account.setBalance(account.getBalance() - transaction.getAmount());
+        } else {
+            account.setBalance(account.getBalance() + transaction.getAmount());
+        }
+
+        accountService.save(account);
+
+        transactionService.deleteById(id);
         return "redirect:/transactions";
     }
 
