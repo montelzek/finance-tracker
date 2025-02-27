@@ -55,21 +55,59 @@ public class TransactionController {
         Account account = accountService.findById(transactionDTO.getAccountId());
         Category category = categoryService.findById(transactionDTO.getCategoryId());
 
-        Transaction transaction = new Transaction(
-                transactionDTO.getAmount(),
-                transactionDTO.getDate(),
-                transactionDTO.getDescription()
-        );
-        transaction.setAccount(account);
-        transaction.setCategory(category);
+        if (transactionDTO.getId() != null) {
+            Transaction existingTransaction = transactionService.findById(transactionDTO.getId()); // TRANSACTION before update
+            Account existingAccount = existingTransaction.getAccount(); // OLD ACCOUNT
 
-        if (category.getType().equals("INCOME")) {
-            account.setBalance(account.getBalance() + transaction.getAmount());
+            // Reversing balance
+
+            if (existingTransaction.getCategory().getType().equals("INCOME")) {
+                existingAccount.setBalance(existingAccount.getBalance() - existingTransaction.getAmount());
+            } else {
+                existingAccount.setBalance(existingAccount.getBalance() + existingTransaction.getAmount());
+            }
+
+            // If account is changing then save the old account balance
+
+            if (!existingAccount.getId().equals(account.getId())) {
+                accountService.save(existingAccount);
+            }
+
+            // Updating transaction
+
+            existingTransaction.setAccount(account);
+            existingTransaction.setDate(transactionDTO.getDate());
+            existingTransaction.setAmount(transactionDTO.getAmount());
+            existingTransaction.setCategory(category);
+            existingTransaction.setDescription(transactionDTO.getDescription());
+
+            // Updating balance
+
+            if (category.getType().equals("INCOME")) {
+                account.setBalance(account.getBalance() + existingTransaction.getAmount());
+            } else {
+                account.setBalance(account.getBalance() - existingTransaction.getAmount());
+            }
+
+            transactionService.save(existingTransaction);
+
         } else {
-            account.setBalance(account.getBalance() - transaction.getAmount());
-        }
+            Transaction transaction = new Transaction(
+                    transactionDTO.getAmount(),
+                    transactionDTO.getDate(),
+                    transactionDTO.getDescription()
+            );
+            transaction.setAccount(account);
+            transaction.setCategory(category);
 
-        transactionService.save(transaction);
+            if (category.getType().equals("INCOME")) {
+                account.setBalance(account.getBalance() + transaction.getAmount());
+            } else {
+                account.setBalance(account.getBalance() - transaction.getAmount());
+            }
+
+            transactionService.save(transaction);
+        }
 
         return "redirect:/transactions";
     }
@@ -79,6 +117,8 @@ public class TransactionController {
 
         Transaction transaction = transactionService.findById(id);
         Account account = transaction.getAccount();
+
+        // Reversing balance
 
         if (transaction.getCategory().getType().equals("INCOME")) {
             account.setBalance(account.getBalance() - transaction.getAmount());
@@ -90,6 +130,25 @@ public class TransactionController {
 
         transactionService.deleteById(id);
         return "redirect:/transactions";
+    }
+
+    // Endpoint to fetch account data for editing
+
+    @GetMapping("/edit/{id}")
+    @ResponseBody
+    public TransactionDTO getTransactionForEdit(@PathVariable Long id) {
+
+        Transaction transaction = transactionService.findById(id);
+
+        TransactionDTO transactionDTO = new TransactionDTO();
+        transactionDTO.setId(transaction.getId());
+        transactionDTO.setAmount(transaction.getAmount());
+        transactionDTO.setDate(transaction.getDate());
+        transactionDTO.setDescription(transaction.getDescription());
+        transactionDTO.setAccountId(transaction.getAccount().getId());
+        transactionDTO.setCategoryId(transaction.getCategory().getId());
+        transactionDTO.setCategoryType(transaction.getCategory().getType());
+        return transactionDTO;
     }
 
     private void prepareTransactionModel(Model model) {
