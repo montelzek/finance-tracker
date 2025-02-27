@@ -29,7 +29,7 @@
                         <i class="bi bi-credit-card"></i>
                         Accounts
                     </a>
-                    <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <a th:href="@{transactions}" class="nav-link text-dark">
                         <i class="bi bi-arrow-left-right"></i>
                         Transactions
                     </a>
@@ -83,8 +83,12 @@
                                 </a>
                                 <span th:text="${tempAccount.name}"></span>
                             </td>
-                            <td class="align-middle" th:text="${tempAccount.accountType}"></td>
-                            <td class="align-middle" th:text="${tempAccount.balance} + ' ' + ${tempAccount.currency}"
+                            <td class="text-center">
+                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2"
+                                      th:text="${tempAccount.accountType}"></span>
+                            </td>
+                            <td class="align-middle" th:text="${#numbers.formatDecimal(tempAccount.balance, 1, 'WHITESPACE', 2, 'POINT')}
+                                + ' ' + ${tempAccount.currency}"
                                 th:classappend="${tempAccount.balance > 0 ? 'text-success' : 'text-danger'}"></td>
                         </tr>
                         </tbody>
