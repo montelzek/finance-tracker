@@ -6,8 +6,10 @@ import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.UserRepository;
 import com.montelzek.moneytrack.service.AccountService;
 import com.montelzek.moneytrack.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -28,16 +30,9 @@ public class AccountController {
     @GetMapping
     public String listAccount(Model model) {
 
-        Long id = userService.getCurrentUserId();
         AccountDTO accountDTO = new AccountDTO();
-        List<Account> accounts = accountService.findUsersAccounts(id);
-        List<Account.AccountType> accountTypes = Arrays.asList(Account.AccountType.values());
-        List<Account.Currency> currencies = Arrays.asList(Account.Currency.values());
-
         model.addAttribute("account", accountDTO);
-        model.addAttribute("accountTypes", accountTypes);
-        model.addAttribute("currencies", currencies);
-        model.addAttribute("accounts", accounts);
+        prepareAccountModel(model);
 
         return "accounts/list";
     }
@@ -60,7 +55,14 @@ public class AccountController {
     }
 
     @PostMapping("/save")
-    public String saveAccount(@ModelAttribute("account") AccountDTO accountDTO) {
+    public String saveAccount(@Valid @ModelAttribute("account") AccountDTO accountDTO,
+                              BindingResult result, Model model) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("account", accountDTO);
+            prepareAccountModel(model);
+            return "accounts/list";
+        }
 
         Long userId = userService.getCurrentUserId();
         User user = userService.findById(userId)
@@ -92,6 +94,17 @@ public class AccountController {
     public String deleteAccount(@RequestParam("accountId") Long id) {
         accountService.deleteById(id);
         return "redirect:/accounts";
+    }
+
+
+    private void prepareAccountModel(Model model) {
+        Long id = userService.getCurrentUserId();
+        List<Account> accounts = accountService.findUsersAccounts(id);
+        List<Account.AccountType> accountTypes = Arrays.asList(Account.AccountType.values());
+        List<Account.Currency> currencies = Arrays.asList(Account.Currency.values());
+        model.addAttribute("accountTypes", accountTypes);
+        model.addAttribute("currencies", currencies);
+        model.addAttribute("accounts", accounts);
     }
 
 }

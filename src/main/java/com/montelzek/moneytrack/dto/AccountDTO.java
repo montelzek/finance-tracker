@@ -15,17 +15,17 @@ public class AccountDTO {
 
     private Long id;
 
-    @NotBlank
-    @Size(max = 120)
+    @NotBlank(message = "Can't be blank.")
+    @Size(max = 120, message = "Max 120 characters.")
     private String name;
 
-    @NotNull
+    @NotNull(message = "Can't be null.")
     private Account.AccountType accountType;
 
-    @NotNull
+    @NotNull(message = "Can't be null.")
     private Account.Currency currency;
 
-    @NotNull
+    @NotNull(message = "Can't be null.")
     private Double balance;
 
     private LocalDateTime createdAt;

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Transactions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar-styles.css">
+
+    <style>
+        .nav-pills .nav-link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #cdcdce;
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 sidebar d-flex flex-column vh-100">
+            <div class="d-flex flex-column flex-grow-1">
+                <a th:href="@{dashboard}" class="navbar-brand">
+                    <i class="bi bi-coin"></i>
+                    FinanceTracker
+                </a>
+                <hr class="horizontal dark mt-0 mb-2">
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+                <a th:href="@{accounts}" class="nav-link text-dark">
+                    <i class="bi bi-credit-card"></i>
+                    Accounts
+                </a>
+                <a th:href="@{transactions}" class="nav-link bg-gradient active">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Transactions
+                </a>
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-wallet2"></i>
+                    Budgets
+                </a>
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-piggy-bank"></i>
+                    Goals
+                </a>
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-bar-chart"></i>
+                    Reports
+                </a>
+                <div class="logout-section mt-auto p-3">
+                    <form th:action="@{logout}" method="post">
+                        <button type="submit" class="logout-btn w-100 btn btn-dark">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 main-content">
+            <div class="d-flex gap-4 align-items-center mb-4">
+                <h2 class="mb-0">Transaction list</h2>
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingTransactionModal">
+                    <i class="bi bi-plus-lg me-2"></i>
+                    Add transaction
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table text-center table-bordered table-hover mt-3">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Transaction</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="tempTransaction : ${transactions}">
+                        <td class="align-middle text-start">
+                            <a th:data-id="${tempTransaction.id}" class="btn btn-sm btn-outline-dark me-2 edit-btn">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{transactions/delete(transactionId=${tempTransaction.id})}" class="btn btn-sm btn-outline-dark me-3">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            <span th:if="${tempTransaction.category.type == 'INCOME'}">
+                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                                <span>---></span>
+                                <span class="ms-2" th:text="${tempTransaction.account.name}"></span>
+                            </span>
+                            <span th:if="${tempTransaction.category.type == 'EXPENSE'}">
+                                <span th:text="${tempTransaction.account.name}"></span>
+                                <span class="mx-2">---></span>
+                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                            </span>
+                        </td>
+                        <td class="align-middle" th:text="${tempTransaction.description}"></td>
+                        <td class="align-middle" th:text="${tempTransaction.date}"></td>
+                        <td class="align-middle"
+                            th:text="${tempTransaction.category.type == 'INCOME' ?
+                            #numbers.formatDecimal(tempTransaction.amount, 1, 'WHITESPACE', 2, 'POINT') +
+                             ' ' + tempTransaction.account.currency : '- ' +
+                            #numbers.formatDecimal(tempTransaction.amount, 1, 'WHITESPACE', 2, 'POINT') +
+                             ' ' + tempTransaction.account.currency}"
+                            th:classappend="${tempTransaction.category.type == 'INCOME' ? 'text-success' : 'text-danger'}">
+
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addingTransactionModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Transaction</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+                <ul class="nav nav-pills nav-fill mb-3 me-3" id="transactionTypeTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active text-danger border border-dark" data-bs-toggle="tab" data-bs-target="#expense" type="button">Expense</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-success border border-dark" data-bs-toggle="tab" data-bs-target="#income" type="button">Income</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="expense">
+                        <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label" for="accountNameExpense">From: </label>
+                                <select class="form-select" id="accountNameExpense" th:field="*{accountId}" required>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.name}">
+                                    </option>
+                                </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="amountExpense">Amount: </label>
+                                <input type="number" step="0.01" id="amountExpense" class="form-control" th:field="*{amount}" required>
+                                <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                            </div>
+                            <div class="d-flex gap-5">
+                                <div class="w-50">
+                                    <label class="form-label" for="expenseCategory">Choose expense category: </label>
+                                    <select class="form-select mb-4 w-100" id="expenseCategory" th:field="*{categoryId}" required>
+                                        <option th:each="expenseCategory : ${expenseCategories}"
+                                                th:value="${expenseCategory.id}"
+                                                th:text="${expenseCategory.name}">
+                                        </option>
+                                    </select>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label" for="expenseDate">Choose date: </label>
+                                    <input type="date" class="form-control" id="expenseDate" th:field="*{date}" required>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></div>
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="expenseDescription">Description: </label>
+                                <input type="text" id="expenseDescription" class="form-control" th:field="*{description}">
+                                <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-dark">Add Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade show" id="income">
+                        <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label" for="accountNameIncome">From: </label>
+                                <select class="form-select" id="accountNameIncome" th:field="*{accountId}" required>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.name}">
+                                    </option>
+                                </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="amountIncome">Amount: </label>
+                                <input type="number" step="0.01" id="amountIncome" class="form-control" th:field="*{amount}" required>
+                                <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                            </div>
+                            <div class="d-flex gap-5">
+                                <div class="w-50">
+                                    <label class="form-label" for="incomeCategory">Choose expense category: </label>
+                                    <select class="form-select mb-4 w-100" id="incomeCategory" th:field="*{categoryId}" required>
+                                        <option th:each="incomeCategory : ${incomeCategories}"
+                                                th:value="${incomeCategory.id}"
+                                                th:text="${incomeCategory.name}">
+                                        </option>
+                                    </select>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label" for="incomeDate">Choose date: </label>
+                                    <input type="date" class="form-control" id="incomeDate" th:field="*{date}" required>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></div>
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="incomeDescription">Description: </label>
+                                <input type="text" id="incomeDescription" class="form-control" th:field="*{description}">
+                                <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-dark">Add Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editTransactionModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel2">Edit Transaction</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                    <input type="hidden" th:field="*{id}" id="transactionId">
+                    <div class="mb-3">
+                        <label class="form-label" for="accountEdit">From: </label>
+                        <select class="form-select" id="accountEdit" th:field="*{accountId}" required>
+                            <option th:each="account : ${accounts}"
+                                    th:value="${account.id}"
+                                    th:text="${account.name}">
+                            </option>
+                        </select>
+                        <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label" for="amountEdit">Amount: </label>
+                        <input type="number" step="0.01" id="amountEdit" class="form-control" th:field="*{amount}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                    </div>
+                    <div class="d-flex gap-5">
+                        <div class="w-50">
+                            <label class="form-label" for="categoryEdit">Choose category: </label>
+                            <select class="form-select mb-4 w-100" id="categoryEdit" th:field="*{categoryId}" required>
+                                <optgroup label="Expense Categories" id="expenseCategoriesGroup">
+                                    <option th:each="expenseCategory : ${expenseCategories}"
+                                            th:value="${expenseCategory.id}"
+                                            th:text="${expenseCategory.name}">
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Income Categories" id="incomeCategoriesGroup">
+                                    <option th:each="incomeCategory : ${incomeCategories}"
+                                            th:value="${incomeCategory.id}"
+                                            th:text="${incomeCategory.name}">
+                                    </option>
+                                </optgroup>
+                            </select>
+                            <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                        </div>
+                        <div class="w-50">
+                            <label class="form-label" for="dateEdit">Choose date: </label>
+                            <input type="date" class="form-control" id="dateEdit" th:field="*{date}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></div>
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label" for="descriptionEdit">Description: </label>
+                        <input type="text" id="descriptionEdit" class="form-control" th:field="*{description}">
+                        <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+<script src="/js/edit-transaction.js"></script>
+
+</body>
+</html>

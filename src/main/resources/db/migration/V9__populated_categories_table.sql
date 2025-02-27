@@ -1,0 +1,15 @@
+INSERT INTO categories (name, type) VALUES
+('Salary', 'INCOME'),
+('Freelance Work', 'INCOME'),
+('Investment Returns', 'INCOME'),
+('Gifts', 'INCOME'),
+('Rental Income', 'INCOME'),
+('Groceries', 'EXPENSE'),
+('Rent', 'EXPENSE'),
+('Utilities', 'EXPENSE'),
+('Transportation', 'EXPENSE'),
+('Entertainment', 'EXPENSE'),
+('Dining Out', 'EXPENSE'),
+('Healthcare', 'EXPENSE'),
+('Insurance', 'EXPENSE'),
+('Shopping', 'EXPENSE');
