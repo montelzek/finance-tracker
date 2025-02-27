@@ -45,4 +45,10 @@ public class Transaction {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
     }
+
+    public Transaction(Double amount, LocalDate date, String description) {
+        this.amount = amount;
+        this.date = date;
+        this.description = description;
+    }
 }
