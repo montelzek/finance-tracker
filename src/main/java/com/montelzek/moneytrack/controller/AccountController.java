@@ -30,7 +30,6 @@ public class AccountController {
     @GetMapping
     public String listAccount(Model model) {
 
-        Long id = userService.getCurrentUserId();
         AccountDTO accountDTO = new AccountDTO();
         model.addAttribute("account", accountDTO);
         prepareAccountModel(model);
