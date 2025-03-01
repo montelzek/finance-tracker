@@ -28,4 +28,6 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private List<Transaction> transactions;
 
+    @OneToMany(mappedBy = "category")
+    private List<Budget> budgets;
 }
