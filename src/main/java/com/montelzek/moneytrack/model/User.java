@@ -60,6 +60,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Account> accounts;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Budget> budgets;
+
     public User(String email, String password, String firstName, String lastName) {
         this.email = email;
         this.password = password;
