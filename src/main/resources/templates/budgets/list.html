@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Budgets</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar-styles.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 sidebar d-flex flex-column vh-100">
+            <div class="d-flex flex-column flex-grow-1">
+                <a th:href="@{dashboard}" class="navbar-brand">
+                    <i class="bi bi-coin"></i>
+                    FinanceTracker
+                </a>
+                <hr class="horizontal dark mt-0 mb-2">
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+                <a th:href="@{accounts}" class="nav-link text-dark">
+                    <i class="bi bi-credit-card"></i>
+                    Accounts
+                </a>
+                <a th:href="@{transactions}" class="nav-link text-dark">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Transactions
+                </a>
+                <a th:href="@{budgets}" class="nav-link bg-gradient active">
+                    <i class="bi bi-wallet2"></i>
+                    Budgets
+                </a>
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-piggy-bank"></i>
+                    Goals
+                </a>
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-bar-chart"></i>
+                    Reports
+                </a>
+                <div class="logout-section mt-auto p-3">
+                    <form th:action="@{logout}" method="post">
+                        <button type="submit" class="logout-btn w-100 btn btn-dark">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 main-content">
+            <div class="d-flex gap-4 align-items-center mb-4">
+                <h2 class="mb-0">Budget list</h2>
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingBudgetModal">
+                    <i class="bi bi-plus-lg me-2"></i>
+                    Add budget
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table text-center table-bordered table-hover mt-3">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Start date</th>
+                        <th>End date</th>
+                        <th>Progress</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="tempBudget : ${budgets}">
+                        <td class="align-middle text-start">
+                            <a th:data-id="${tempBudget.id}" class="btn btn-sm btn-outline-dark me-2 edit-btn">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a th:href="@{budgets/delete(budgetId=${tempBudget.id})}" class="btn btn-sm btn-outline-dark me-3">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                            <span th:text="${tempBudget.name}"></span>
+                        </td>
+                        <td class="text-center">
+                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2"
+                                      th:text="${tempBudget.category.name}"></span>
+                        </td>
+                        <td class="align-middle" th:text="${tempBudget.startDate}"></td>
+                        <td class="align-middle" th:text="${tempBudget.endDate}"></td>
+                        <td class="align-middle" th:text="${#numbers.formatDecimal((tempBudget.budgetSpent / tempBudget.budgetSize * 100), 1, 2) + ' %'}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="addingBudgetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Add budget</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/budgets/save}" th:object="${budget}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label" for="name">Name: </label>
+                        <input type="text" id="name" class="form-control" th:field="*{name}" required maxlength="120">
+                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="expenseCategory">Choose expense category: </label>
+                        <select class="form-select mb-4 w-100" id="expenseCategory" th:field="*{categoryId}" required>
+                            <option th:each="expenseCategory : ${expenseCategories}"
+                                    th:value="${expenseCategory.id}"
+                                    th:text="${expenseCategory.name}">
+                            </option>
+                        </select>
+                        <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                    </div>
+                    <div class="d-flex gap-5 mb-3">
+                        <div class="w-50">
+                            <label class="form-label" for="startDate">From: </label>
+                            <input type="date" class="form-control" id="startDate" th:field="*{startDate}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                        </div>
+                        <div class="w-50">
+                            <label class="form-label" for="endDate">To: </label>
+                            <input type="date" class="form-control" id="endDate" th:field="*{endDate}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label" for="budgetSize">Budget size: </label>
+                        <input type="number" step="0.01" id="budgetSize" class="form-control" th:field="*{budgetSize}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('budgetSize')}" th:errors="*{budgetSize}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Add budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+</body>
+</html>
