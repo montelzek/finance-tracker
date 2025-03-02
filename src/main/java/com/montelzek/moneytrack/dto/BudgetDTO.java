@@ -1,9 +1,6 @@
 package com.montelzek.moneytrack.dto;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,13 +21,16 @@ public class BudgetDTO {
 
     @NotNull(message = "End date can't be empty.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @FutureOrPresent(message = "End date must be in the present or future")
     private LocalDate endDate;
 
     @NotNull(message = "Budget size can't be empty.")
     @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
     private Double budgetSize;
 
+    @NotNull(message = "Category can't be empty.")
+    private Integer categoryId;
+
     private Long id;
 
-    private String categoryType;
 }
