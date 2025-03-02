@@ -1,16 +1,14 @@
 package com.montelzek.moneytrack.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "budgets")
@@ -35,12 +33,30 @@ public class Budget {
     @NotNull
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     @Column(name = "end_date")
+    @FutureOrPresent
     private LocalDate endDate;
 
     @NotNull
     @DecimalMin(value = "0.01")
     @Column(name = "budget_size")
     private Double budgetSize;
+
+    @NotNull
+    @Column(name = "budget_spent")
+    private Double budgetSpent;
+
+    @NotNull
+    @Column(name = "is_active")
+    private Boolean isActive = true;
+
+    @NotNull
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,5 +73,6 @@ public class Budget {
         this.startDate = startDate;
         this.endDate = endDate;
         this.budgetSize = budgetSize;
+        this.isActive = true;
     }
 }
