@@ -71,6 +71,9 @@
                         <th>Type</th>
                         <th>Start date</th>
                         <th>End date</th>
+                        <th>Active?</th>
+                        <th>Budget size</th>
+                        <th>Budget spent</th>
                         <th>Progress</th>
                     </tr>
                     </thead>
@@ -91,6 +94,9 @@
                         </td>
                         <td class="align-middle" th:text="${tempBudget.startDate}"></td>
                         <td class="align-middle" th:text="${tempBudget.endDate}"></td>
+                        <td class="align-middle" th:text="${tempBudget.isActive}"></td>
+                        <td class="align-middle" th:text="${#numbers.formatDecimal(tempBudget.budgetSize, 1, 'WHITESPACE', 2, 'POINT') + ' $'}"></td>
+                        <td class="align-middle" th:text="${#numbers.formatDecimal(tempBudget.budgetSpent, 1, 'WHITESPACE', 2, 'POINT') + ' $'}"></td>
                         <td class="align-middle" th:text="${#numbers.formatDecimal((tempBudget.budgetSpent / tempBudget.budgetSize * 100), 1, 2) + ' %'}"></td>
                     </tr>
                     </tbody>
@@ -134,7 +140,7 @@
                         </div>
                         <div class="w-50">
                             <label class="form-label" for="endDate">To: </label>
-                            <input type="date" class="form-control" id="endDate" th:field="*{endDate}" required>
+                            <input type="date" class="form-control" id="endDate" th:field="*{endDate}" min="" required>
                             <div class="text-danger" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
                         </div>
                     </div>
@@ -153,10 +159,81 @@
     </div>
 </div>
 
+<div class="modal fade" id="editBudgetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabelEdit">Edit budget</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/budgets/save}" th:object="${budget}" method="post">
+                    <input type="hidden" th:field="*{id}" id="budgetId">
+                    <div class="mb-3">
+                        <label class="form-label" for="nameEdit">Name: </label>
+                        <input type="text" id="nameEdit" class="form-control" th:field="*{name}" required maxlength="120">
+                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="expenseCategoryEdit">Choose expense category: </label>
+                        <select class="form-select mb-4 w-100" id="expenseCategoryEdit" th:field="*{categoryId}" required>
+                            <option th:each="expenseCategory : ${expenseCategories}"
+                                    th:value="${expenseCategory.id}"
+                                    th:text="${expenseCategory.name}">
+                            </option>
+                        </select>
+                        <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                    </div>
+                    <div class="d-flex gap-5 mb-3">
+                        <div class="w-50">
+                            <label class="form-label" for="startDateEdit">From: </label>
+                            <input type="date" class="form-control" id="startDateEdit" th:field="*{startDate}" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('startDate')}" th:errors="*{startDate}"></div>
+                        </div>
+                        <div class="w-50">
+                            <label class="form-label" for="endDateEdit">To: </label>
+                            <input type="date" class="form-control" id="endDateEdit" th:field="*{endDate}" min="" required>
+                            <div class="text-danger" th:if="${#fields.hasErrors('endDate')}" th:errors="*{endDate}"></div>
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label" for="budgetSizeEdit">Budget size: </label>
+                        <input type="number" step="0.01" id="budgetSizeEdit" class="form-control" th:field="*{budgetSize}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('budgetSize')}" th:errors="*{budgetSize}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Save budget</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 
+<script>
+
+    function getTodayDate() {
+        const today = new Date();
+        const year = today.getFullYear();
+        let month = today.getMonth() + 1;
+        let day = today.getDate();
+        month = month < 10 ? '0' + month : month;
+        day = day < 10 ? '0' + day : day;
+
+        return `${year}-${month}-${day}`;
+    }
+
+    document.getElementById('endDate').min = getTodayDate();
+    document.getElementById('endDateEdit').min = getTodayDate();
+
+</script>
+<script src="/js/edit-budget.js"></script>
 </body>
 </html>
