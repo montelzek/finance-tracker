@@ -46,10 +46,6 @@ public class Budget {
     private Double budgetSpent;
 
     @NotNull
-    @Column(name = "is_active")
-    private Boolean isActive = true;
-
-    @NotNull
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -73,6 +69,5 @@ public class Budget {
         this.startDate = startDate;
         this.endDate = endDate;
         this.budgetSize = budgetSize;
-        this.isActive = true;
     }
 }
