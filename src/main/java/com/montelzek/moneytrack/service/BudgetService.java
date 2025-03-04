@@ -1,9 +1,11 @@
 package com.montelzek.moneytrack.service;
 
 import com.montelzek.moneytrack.model.Budget;
+import com.montelzek.moneytrack.model.Category;
 import com.montelzek.moneytrack.repository.BudgetRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -30,6 +32,10 @@ public class BudgetService {
 
     public void deleteById(Long id) {
         budgetRepository.deleteById(id);
+    }
+
+    public List<Budget> findBudgetsByCategoryAndDate(Category category, LocalDate date) {
+        return budgetRepository.findByCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(category, date, date);
     }
 
 }
