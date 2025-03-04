@@ -1,5 +1,6 @@
 package com.montelzek.moneytrack.service;
 
+import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Transaction;
 import com.montelzek.moneytrack.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
@@ -10,9 +11,13 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final BudgetService budgetService;
+    private final ExchangeRateService exchangeRateService;
 
-    public TransactionService(TransactionRepository transactionRepository) {
+    public TransactionService(TransactionRepository transactionRepository, BudgetService budgetService, ExchangeRateService exchangeRateService) {
         this.transactionRepository = transactionRepository;
+        this.budgetService = budgetService;
+        this.exchangeRateService = exchangeRateService;
     }
 
     public List<Transaction> findAccountsTransactions(Long id) {
@@ -21,6 +26,20 @@ public class TransactionService {
 
     public void save(Transaction transaction) {
         transactionRepository.save(transaction);
+
+        if (transaction.getCategory().getType().equals("EXPENSE")) {
+            List<Budget> budgets = budgetService.findBudgetsByCategoryAndDate(
+                    transaction.getCategory(),
+                    transaction.getDate()
+            );
+            if (!budgets.isEmpty()) {
+                Budget budget = budgets.getFirst();
+                String currency = String.valueOf(transaction.getAccount().getCurrency());
+                Double amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                budget.setBudgetSpent(budget.getBudgetSpent() + amountInUSD);
+                budgetService.save(budget);
+            }
+        }
     }
 
     public void deleteById(Long id) {
