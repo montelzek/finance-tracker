@@ -57,11 +57,62 @@
             </div>
 
             <div class="col-md-9 col-lg-10 main-content">
-                <h1>DASHBOARD</h1>
-                Welcome <span sec:authentication="name"></span>!
-                <br>
-                You have these roles: <span sec:authentication="principal.authorities"></span>
+                <div class="container-fluid pt-2">
 
+                    <h2>Welcome back, <span th:text="${user.firstName}"></span>
+                        <span sec:authentication="principal.authorities"></span></h2>
+
+                    <div class="row mb-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="card shadow-sm h-100 mt-2">
+                                <div class="card-body">
+                                    <div class="d-flex flex-column">
+                                        <div>
+                                            <i class="bi bi-cash-stack fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-uppercase text-muted mb-0">Total Balance</h6>
+                                            <h3 class="mb-0"th:text="${#numbers.formatDecimal(totalBalance, 1,
+                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card shadow-sm h-100 mt-2">
+                                <div class="card-body">
+                                    <div class="d-flex flex-column">
+                                        <div>
+                                            <i class="bi bi-graph-up-arrow fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-uppercase text-muted mb-0">Income Last Month</h6>
+                                            <h3 class="mb-0 text-success" th:text="${#numbers.formatDecimal(incomeFromLastMonth, 1,
+                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card shadow-sm h-100 mt-2">
+                                <div class="card-body">
+                                    <div class="d-flex flex-column">
+                                        <div>
+                                            <i class="bi bi-graph-down-arrow fs-4"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-uppercase text-muted mb-0">Expenses Last Month</h6>
+                                            <h3 class="mb-0 text-danger" th:text="${#numbers.formatDecimal(expensesFromLastMonth, 1,
+                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
