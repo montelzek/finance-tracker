@@ -72,7 +72,7 @@
                                         </div>
                                         <div>
                                             <h6 class="text-uppercase text-muted mb-0">Total Balance</h6>
-                                            <h3 class="mb-0"th:text="${#numbers.formatDecimal(totalBalance, 1,
+                                            <h3 class="mb-0" th:text="${#numbers.formatDecimal(totalBalance, 1,
                                              'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
                                         </div>
                                     </div>
@@ -112,9 +112,64 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row mb-4">
+                        <div class="col-md-5">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Expenses by Category (Last 30 Days)</h5>
+                                    <div class="d-flex gap-5" style="height: 300px;">
+                                        <canvas id="expenseChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+
+        // Expenses
+
+        var expensesData = /*[[${expensesByCategory}]]*/ {};
+        var categories = Object.keys(expensesData);
+        var amounts = categories.map(function(key) {
+            return expensesData[key];
+        });
+
+        var ctx = document.getElementById('expenseChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: amounts,
+                    backgroundColor: [
+                        '#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948',
+                        '#B07AA1', '#FF9DA7', '#9C755F', '#BAB0AC', '#7C7C7C', '#6A5D4D'
+                    ],
+                    borderColor: '#fff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: $${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    </script>
 </body>
 </html>
