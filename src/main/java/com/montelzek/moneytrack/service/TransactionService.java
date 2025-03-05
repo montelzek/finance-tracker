@@ -3,11 +3,11 @@ package com.montelzek.moneytrack.service;
 import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Transaction;
 import com.montelzek.moneytrack.repository.TransactionRepository;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class TransactionService {
@@ -53,10 +53,6 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
     }
 
-    public List<Transaction> findIncomeTransactionsFromPastMonth(Long userId) {
-        return transactionRepository.findIncomeTransactionsFromPastMonth(userId);
-    }
-
     public Double getIncomeFromLastMonth(Long userId) {
 
         List<Transaction> transactions = transactionRepository.findIncomeTransactionsFromPastMonth(userId);
@@ -82,4 +78,28 @@ public class TransactionService {
 
         return totalExpenses;
     }
+
+    public Map<String, Double> getExpensesByCategoryFromLastMonth(Long userId) {
+
+        List<Transaction> transactions = transactionRepository.findExpenseTransactionsFromPastMonth(userId);
+        return getStringDoubleMap(transactions);
+    }
+
+    private Map<String, Double> getStringDoubleMap(List<Transaction> transactions) {
+        Map<String, Double> transactionsByCategory = new HashMap<>();
+
+        for (Transaction transaction : transactions) {
+
+            String categoryName = transaction.getCategory().getName();
+            Double amount = exchangeRateService.convertToUSD(
+                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
+
+            amount = Math.round(amount * 100.0) / 100.0;
+            transactionsByCategory.merge(categoryName, amount, Double::sum);
+        }
+
+        return transactionsByCategory;
+    }
+
+
 }
