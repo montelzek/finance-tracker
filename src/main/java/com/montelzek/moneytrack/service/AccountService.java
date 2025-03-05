@@ -5,15 +5,18 @@ import com.montelzek.moneytrack.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
+    private final ExchangeRateService exchangeRateService;
 
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, ExchangeRateService exchangeRateService) {
         this.accountRepository = accountRepository;
+        this.exchangeRateService = exchangeRateService;
     }
 
     public List<Account> findUsersAccounts(Long id) {
@@ -40,6 +43,18 @@ public class AccountService {
 
     public void deleteById(Long id) {
         accountRepository.deleteById(id);
+    }
+
+    public Double getTotalBalance(Long userId) {
+
+        List<Account> accounts = accountRepository.findByUserId(userId);
+        Double totalBalance = 0.0;
+
+        for (Account account : accounts) {
+            totalBalance += exchangeRateService.convertToUSD(String.valueOf(account.getCurrency()), account.getBalance());
+        }
+
+        return totalBalance;
     }
 
 }
