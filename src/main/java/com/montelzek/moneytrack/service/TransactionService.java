@@ -3,7 +3,9 @@ package com.montelzek.moneytrack.service;
 import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Transaction;
 import com.montelzek.moneytrack.repository.TransactionRepository;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.resource.ResourceUrlEncodingFilter;
 
 import java.util.List;
 
@@ -49,5 +51,35 @@ public class TransactionService {
     public Transaction findById(Long id) {
         return transactionRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
+    }
+
+    public List<Transaction> findIncomeTransactionsFromPastMonth(Long userId) {
+        return transactionRepository.findIncomeTransactionsFromPastMonth(userId);
+    }
+
+    public Double getIncomeFromLastMonth(Long userId) {
+
+        List<Transaction> transactions = transactionRepository.findIncomeTransactionsFromPastMonth(userId);
+        Double totalIncome = 0.0;
+
+        for (Transaction transaction : transactions) {
+            totalIncome += exchangeRateService.convertToUSD(
+                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
+        }
+
+        return totalIncome;
+    }
+
+    public Double getExpensesFromLastMonth(Long userId) {
+
+        List<Transaction> transactions = transactionRepository.findExpenseTransactionsFromPastMonth(userId);
+        Double totalExpenses = 0.0;
+
+        for (Transaction transaction : transactions) {
+            totalExpenses += exchangeRateService.convertToUSD(
+                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
+        }
+
+        return totalExpenses;
     }
 }
