@@ -5,7 +5,10 @@ import com.montelzek.moneytrack.model.Transaction;
 import com.montelzek.moneytrack.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +102,38 @@ public class TransactionService {
         }
 
         return transactionsByCategory;
+    }
+
+
+    public Map<String, Map<String, Double>> getTransactionsFromLastSixMonths(Long userId) {
+
+        LocalDate sixMonthAgo = LocalDate.now().minusMonths(6).withDayOfMonth(1);
+        List<Transaction> transactions = transactionRepository.findTransactionsFromLastSixMonths(userId, sixMonthAgo);
+
+        Map<String, Map<String, Double>> transactionsGroupByMonth = new LinkedHashMap<>();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
+        for (int i = 5; i >= 0; i--) {
+            LocalDate month = LocalDate.now().minusMonths(i).withDayOfMonth(1);
+            String monthKey = month.format(formatter);
+            transactionsGroupByMonth.put(monthKey, new HashMap<>());
+            transactionsGroupByMonth.get(monthKey).put("INCOME", 0.0);
+            transactionsGroupByMonth.get(monthKey).put("EXPENSE", 0.0);
+        }
+
+        for (Transaction transaction : transactions) {
+            String monthKey = transaction.getDate().withDayOfMonth(1).format(formatter);
+            String type = transaction.getCategory().getType();
+            Double amount = exchangeRateService.convertToUSD(
+                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
+
+            if (transactionsGroupByMonth.containsKey(monthKey)) {
+                Double current = transactionsGroupByMonth.get(monthKey).get(type);
+                transactionsGroupByMonth.get(monthKey).put(type, current + amount);
+            }
+        }
+
+        return transactionsGroupByMonth;
     }
 
 
