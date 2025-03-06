@@ -63,62 +63,60 @@
                         <span sec:authentication="principal.authorities"></span></h2>
 
                     <div class="row mb-4">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-2">
                             <div class="card shadow-sm h-100 mt-2">
-                                <div class="card-body">
-                                    <div class="d-flex flex-column">
-                                        <div>
-                                            <i class="bi bi-cash-stack fs-4"></i>
-                                        </div>
-                                        <div>
-                                            <h6 class="text-uppercase text-muted mb-0">Total Balance</h6>
-                                            <h3 class="mb-0" th:text="${#numbers.formatDecimal(totalBalance, 1,
-                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
-                                        </div>
+                                <div class="card-body d-flex align-items-center justify-content-center p-1">
+                                    <div class="text-center">
+                                        <i class="bi bi-cash-stack fs-1"></i>
+                                        <h6 class="text-uppercase text-muted mb-0">Total Balance</h6>
+                                        <h3 class="mb-0" th:text="${#numbers.formatDecimal(totalBalance, 1,
+                                         'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-2">
                             <div class="card shadow-sm h-100 mt-2">
-                                <div class="card-body">
-                                    <div class="d-flex flex-column">
-                                        <div>
-                                            <i class="bi bi-graph-up-arrow fs-4"></i>
-                                        </div>
-                                        <div>
+                                <div class="card-body d-flex align-items-center justify-content-center p-1">
+                                    <div class="text-center">
+                                            <i class="bi bi-graph-up-arrow fs-1"></i>
                                             <h6 class="text-uppercase text-muted mb-0">Income Last Month</h6>
                                             <h3 class="mb-0 text-success" th:text="${#numbers.formatDecimal(incomeFromLastMonth, 1,
                                              'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 mb-2">
                             <div class="card shadow-sm h-100 mt-2">
-                                <div class="card-body">
-                                    <div class="d-flex flex-column">
-                                        <div>
-                                            <i class="bi bi-graph-down-arrow fs-4"></i>
-                                        </div>
-                                        <div>
+                                <div class="card-body d-flex align-items-center justify-content-center p-1">
+                                    <div class="text-center">
+                                            <i class="bi bi-graph-down-arrow fs-1"></i>
                                             <h6 class="text-uppercase text-muted mb-0">Expenses Last Month</h6>
                                             <h3 class="mb-0 text-danger" th:text="${#numbers.formatDecimal(expensesFromLastMonth, 1,
                                              'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
-                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="row mb-4">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <div class="card shadow-sm h-100">
-                                <div class="card-body">
+                                <div class="card-body text-center">
                                     <h5 class="card-title">Expenses by Category (Last 30 Days)</h5>
                                     <div class="d-flex gap-5" style="height: 300px;">
                                         <canvas id="expenseChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Monthly income and expenses</h5>
+                                    <div class="d-flex gap-5" style="height: 300px;">
+                                        <canvas id="transactionsChart"></canvas>
                                     </div>
                                 </div>
                             </div>
@@ -134,13 +132,13 @@
 
         // Expenses
 
-        var expensesData = /*[[${expensesByCategory}]]*/ {};
-        var categories = Object.keys(expensesData);
-        var amounts = categories.map(function(key) {
+        const expensesData = /*[[${expensesByCategory}]]*/ {};
+        const categories = Object.keys(expensesData);
+        const amounts = categories.map(function (key) {
             return expensesData[key];
         });
 
-        var ctx = document.getElementById('expenseChart').getContext('2d');
+        const ctx = document.getElementById('expenseChart').getContext('2d');
         new Chart(ctx, {
             type: 'pie',
             data: {
@@ -163,6 +161,69 @@
                         callbacks: {
                             label: function(context) {
                                 return `${context.label}: $${context.raw.toFixed(2)}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Transactions Last Six Months
+
+
+        const transactionsData = /*[[${transactionsLastSixMonths}]]*/ {};
+        const months = Object.keys(transactionsData);
+        const income = months.map(m => transactionsData[m].INCOME.toFixed(2));
+        const expenses = months.map(m => transactionsData[m].EXPENSE.toFixed(2));
+
+        const context = document.getElementById('transactionsChart').getContext('2d');
+        new Chart(context, {
+            type: 'bar',
+            data: {
+                labels: months,
+                datasets: [
+                    {
+                        label: "Income",
+                        data: income,
+                        backgroundColor: '#38913e',
+                        hoverBackgroundColor: '#1B5E20',
+                        borderRadius: 5
+                    },
+                    {
+                        label: "Expense",
+                        data: expenses,
+                        backgroundColor: '#d53e3e',
+                        hoverBackgroundColor: '#B71C1C',
+                        borderRadius: 5
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Amount ($)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: $${context.raw}`;
                             }
                         }
                     }
