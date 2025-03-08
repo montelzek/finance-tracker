@@ -89,6 +89,7 @@ public class AuthController {
         model.addAttribute("expensesFromLastMonth", transactionService.getExpensesFromLastMonth(userId));
         model.addAttribute("expensesByCategory", transactionService.getExpensesByCategoryFromLastMonth(userId));
         model.addAttribute("transactionsLastSixMonths", transactionService.getTransactionsFromLastSixMonths(userId));
+        model.addAttribute("recentTransactions", transactionService.getRecentTransactions(userId));
 
         return "dashboard";
     }
