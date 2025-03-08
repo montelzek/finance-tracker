@@ -13,6 +13,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     List<Transaction> findByAccount_User_Id_OrderByCreatedAt(Long userId);
 
+    List<Transaction> findTop6ByAccount_User_Id_OrderByDateDesc(Long userId);
+
     @Query("SELECT t FROM Transaction t " +
             "JOIN t.account a " +
             "JOIN t.category c " +
