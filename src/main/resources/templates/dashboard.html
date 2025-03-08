@@ -62,66 +62,122 @@
                     <h2>Welcome back, <span th:text="${user.firstName}"></span>
                         <span sec:authentication="principal.authorities"></span></h2>
 
-                    <div class="row mb-4">
-                        <div class="col-md-3 mb-2">
-                            <div class="card shadow-sm h-100 mt-2">
-                                <div class="card-body d-flex align-items-center justify-content-center p-1">
-                                    <div class="text-center">
-                                        <i class="bi bi-cash-stack fs-1"></i>
-                                        <h6 class="text-uppercase text-muted mb-0">Total Balance</h6>
-                                        <h3 class="mb-0" th:text="${#numbers.formatDecimal(totalBalance, 1,
+                    <div class="row">
+                        <div class="col-md-9">
+                            <div class="row mb-4">
+                                <div class="col-md-4 mb-2">
+                                    <div class="card shadow-sm h-100 mt-2">
+                                        <div class="card-body d-flex align-items-center justify-content-center p-1">
+                                            <div class="text-center">
+                                                <i class="bi bi-cash-stack fs-1"></i>
+                                                <h6 class="text-uppercase text-muted mb-0">Total Balance</h6>
+                                                <h3 class="mb-0" th:text="${#numbers.formatDecimal(totalBalance, 1,
                                          'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <div class="card shadow-sm h-100 mt-2">
+                                        <div class="card-body d-flex align-items-center justify-content-center p-1">
+                                            <div class="text-center">
+                                                <i class="bi bi-graph-up-arrow fs-1"></i>
+                                                <h6 class="text-uppercase text-muted mb-0">Income Last 30 Days</h6>
+                                                <h3 class="mb-0 text-success" th:text="${#numbers.formatDecimal(incomeFromLastMonth, 1,
+                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <div class="card shadow-sm h-100 mt-2">
+                                        <div class="card-body d-flex align-items-center justify-content-center p-1">
+                                            <div class="text-center">
+                                                <i class="bi bi-graph-down-arrow fs-1"></i>
+                                                <h6 class="text-uppercase text-muted mb-0">Expenses Last 30 Days</h6>
+                                                <h3 class="mb-0 text-danger" th:text="${#numbers.formatDecimal(expensesFromLastMonth, 1,
+                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-5">
+                                    <div class="card shadow-sm h-100">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Expenses by Category (Last 30 Days)</h5>
+                                            <div class="d-flex gap-5" style="height: 300px;">
+                                                <canvas id="expenseChart"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    <div class="card shadow-sm h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h5 class="card-title mb-0">Recent Transactions</h5>
+                                                <a th:href="@{/transactions}" class="btn btn-link text-decoration-none">
+                                                    View all transactions <i class="bi bi-arrow-right"></i>
+                                                </a>
+                                            </div>
+                                            <div th:each="tempTransaction : ${recentTransactions}"
+                                                 class="d-flex justify-content-between align-items-center mb-1 p-2">
+                                                <div class="d-flex align-items-center">
+                                                    <span class="me-3 fw-medium"
+                                                            th:text="${#temporals.format(tempTransaction.date, 'MMM dd', T(java.util.Locale).ENGLISH)}">
+                                                    </span>
+                                                    <span th:if="${tempTransaction.category.type == 'INCOME'}">
+                                                    <span class="badge bg-success bg-opacity-25 text-success px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                                                    <span class="mx-2">→</span>
+                                                    <span class="ms-2" th:text="${tempTransaction.account.name}"></span>
+                                                </span>
+                                                    <span th:if="${tempTransaction.category.type == 'EXPENSE'}">
+                                                    <span th:text="${tempTransaction.account.name}"></span>
+                                                    <span class="mx-2">→</span>
+                                                    <span class="badge bg-danger bg-opacity-25 text-danger px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                                                </span>
+                                                </div>
+                                                <div>
+                                                <span class="fw-bold" th:text="${tempTransaction.category.type == 'INCOME' ?
+                                                        #numbers.formatDecimal(tempTransaction.amount, 1, 'WHITESPACE', 2, 'POINT') +
+                                                         ' ' + tempTransaction.account.currency : '- ' +
+                                                        #numbers.formatDecimal(tempTransaction.amount, 1, 'WHITESPACE', 2, 'POINT') +
+                                                         ' ' + tempTransaction.account.currency}"
+                                                      th:classappend="${tempTransaction.category.type == 'INCOME' ? 'text-success' : 'text-danger'}">
+                                                </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-md-12">
+                                    <div class="card shadow-sm h-100">
+                                        <div class="card-body text-center">
+                                            <h5 class="card-title">Monthly income and expenses</h5>
+                                            <div class="d-flex gap-5" style="height: 300px;">
+                                                <canvas id="transactionsChart"></canvas>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-2">
-                            <div class="card shadow-sm h-100 mt-2">
-                                <div class="card-body d-flex align-items-center justify-content-center p-1">
-                                    <div class="text-center">
-                                            <i class="bi bi-graph-up-arrow fs-1"></i>
-                                            <h6 class="text-uppercase text-muted mb-0">Income Last Month</h6>
-                                            <h3 class="mb-0 text-success" th:text="${#numbers.formatDecimal(incomeFromLastMonth, 1,
-                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-2">
-                            <div class="card shadow-sm h-100 mt-2">
-                                <div class="card-body d-flex align-items-center justify-content-center p-1">
-                                    <div class="text-center">
-                                            <i class="bi bi-graph-down-arrow fs-1"></i>
-                                            <h6 class="text-uppercase text-muted mb-0">Expenses Last Month</h6>
-                                            <h3 class="mb-0 text-danger" th:text="${#numbers.formatDecimal(expensesFromLastMonth, 1,
-                                             'WHITESPACE', 2, 'POINT')} + ' $'"></h3>
+                        <div class="col-md-3 mb-4">
+                            <div class="d-flex flex-column h-100">
+                                <div class="card shadow-sm flex-grow-1 mt-2">
+                                    <div class="card-body">
+
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body text-center">
-                                    <h5 class="card-title">Expenses by Category (Last 30 Days)</h5>
-                                    <div class="d-flex gap-5" style="height: 300px;">
-                                        <canvas id="expenseChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="card shadow-sm h-100">
-                                <div class="card-body text-center">
-                                    <h5 class="card-title">Monthly income and expenses</h5>
-                                    <div class="d-flex gap-5" style="height: 300px;">
-                                        <canvas id="transactionsChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+
+
                 </div>
             </div>
         </div>
