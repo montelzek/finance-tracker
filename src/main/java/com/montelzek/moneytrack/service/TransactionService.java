@@ -29,6 +29,10 @@ public class TransactionService {
         return transactionRepository.findByAccount_User_Id_OrderByCreatedAt(id);
     }
 
+    public List<Transaction> getRecentTransactions(Long id) {
+        return transactionRepository.findTop6ByAccount_User_Id_OrderByDateDesc(id);
+    }
+
     public void save(Transaction transaction) {
         transactionRepository.save(transaction);
 
