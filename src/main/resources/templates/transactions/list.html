@@ -96,19 +96,19 @@
                                 <i class="bi bi-trash"></i>
                             </a>
                             <span th:if="${tempTransaction.category.type == 'INCOME'}">
-                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                                <span class="badge bg-success bg-opacity-25 text-success px-3 py-2" th:text="${tempTransaction.category.name}"></span>
                                 <span>---></span>
                                 <span class="ms-2" th:text="${tempTransaction.account.name}"></span>
                             </span>
                             <span th:if="${tempTransaction.category.type == 'EXPENSE'}">
                                 <span th:text="${tempTransaction.account.name}"></span>
                                 <span class="mx-2">---></span>
-                                <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                                <span class="badge bg-danger bg-opacity-25 text-danger px-3 py-2" th:text="${tempTransaction.category.name}"></span>
                             </span>
                         </td>
                         <td class="align-middle" th:text="${tempTransaction.description}"></td>
                         <td class="align-middle" th:text="${tempTransaction.date}"></td>
-                        <td class="align-middle"
+                        <td class="align-middle fw-bold"
                             th:text="${tempTransaction.category.type == 'INCOME' ?
                             #numbers.formatDecimal(tempTransaction.amount, 1, 'WHITESPACE', 2, 'POINT') +
                              ' ' + tempTransaction.account.currency : '- ' +

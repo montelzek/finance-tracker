@@ -87,7 +87,7 @@
                                 <span class="badge bg-dark bg-opacity-10 text-dark px-3 py-2"
                                       th:text="${tempAccount.accountType}"></span>
                             </td>
-                            <td class="align-middle" th:text="${#numbers.formatDecimal(tempAccount.balance, 1, 'WHITESPACE', 2, 'POINT')}
+                            <td class="align-middle fw-bold" th:text="${#numbers.formatDecimal(tempAccount.balance, 1, 'WHITESPACE', 2, 'POINT')}
                                 + ' ' + ${tempAccount.currency}"
                                 th:classappend="${tempAccount.balance > 0 ? 'text-success' : 'text-danger'}"></td>
                         </tr>
