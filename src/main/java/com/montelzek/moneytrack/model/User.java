@@ -63,6 +63,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Budget> budgets;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<FinancialGoal> financialGoals;
+
     public User(String email, String password, String firstName, String lastName) {
         this.email = email;
         this.password = password;
