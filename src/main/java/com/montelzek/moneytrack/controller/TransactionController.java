@@ -3,11 +3,9 @@ package com.montelzek.moneytrack.controller;
 import com.montelzek.moneytrack.dto.TransactionDTO;
 import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.model.Category;
+import com.montelzek.moneytrack.model.FinancialGoal;
 import com.montelzek.moneytrack.model.Transaction;
-import com.montelzek.moneytrack.service.AccountService;
-import com.montelzek.moneytrack.service.CategoryService;
-import com.montelzek.moneytrack.service.TransactionService;
-import com.montelzek.moneytrack.service.UserService;
+import com.montelzek.moneytrack.service.*;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,12 +22,16 @@ public class TransactionController {
     private final TransactionService transactionService;
     private final UserService userService;
     private final AccountService accountService;
+    private final FinancialGoalService financialGoalService;
+    private final ExchangeRateService exchangeRateService;
 
-    public TransactionController(CategoryService categoryService, TransactionService transactionService, UserService userService, AccountService accountService) {
+    public TransactionController(CategoryService categoryService, TransactionService transactionService, UserService userService, AccountService accountService, FinancialGoalService financialGoalService, ExchangeRateService exchangeRateService) {
         this.categoryService = categoryService;
         this.transactionService = transactionService;
         this.userService = userService;
         this.accountService = accountService;
+        this.financialGoalService = financialGoalService;
+        this.exchangeRateService = exchangeRateService;
     }
 
     @GetMapping
@@ -106,6 +108,29 @@ public class TransactionController {
                 account.setBalance(account.getBalance() - transaction.getAmount());
             }
 
+            if (category.getType().equals("FINANCIAL_GOAL")) {
+
+                Long financialGoalId = transactionDTO.getFinancialGoalId();
+                FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
+
+                if (financialGoal.getIsAchieved()) {
+                    result.rejectValue("financialGoalId", "error.goal", "Can't add transaction to already achieved goal!");
+                    prepareTransactionModel(model);
+                    return "transactions/list";
+                }
+
+                String currency = account.getCurrency().toString();
+                Double amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+
+                financialGoal.setCurrentAmount(financialGoal.getCurrentAmount() + amountInUSD);
+
+                if (financialGoal.getCurrentAmount() >= financialGoal.getTargetAmount()) {
+                    financialGoal.setIsAchieved(true);
+                }
+
+                financialGoalService.save(financialGoal);
+            }
+
             transactionService.save(transaction);
         }
 
@@ -132,8 +157,6 @@ public class TransactionController {
         return "redirect:/transactions";
     }
 
-    // Endpoint to fetch account data for editing
-
     @GetMapping("/edit/{id}")
     @ResponseBody
     public TransactionDTO getTransactionForEdit(@PathVariable Long id) {
@@ -157,11 +180,15 @@ public class TransactionController {
         List<Category> categories = categoryService.findAll();
         List<Category> incomeCategories = categoryService.findByType("INCOME");
         List<Category> expenseCategories = categoryService.findByType("EXPENSE");
+        List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
+        List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
         model.addAttribute("transactions", transactions);
         model.addAttribute("categories", categories);
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
         model.addAttribute("accounts", accounts);
+        model.addAttribute("financialGoals", financialGoals);
+        model.addAttribute("financialGoalCategories", financialGoalCategories);
     }
 }
