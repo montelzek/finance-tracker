@@ -35,8 +35,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
 
     @Query("SELECT t FROM Transaction t " +
             "JOIN t.account a " +
+            "JOIN t.category c " +
             "JOIN a.user u " +
             "WHERE u.id = :userId " +
+            "AND (c.type = 'INCOME' OR c.type = 'EXPENSE') " +
             "AND t.date >= :startDate")
     List<Transaction> findTransactionsFromLastSixMonths(Long userId, LocalDate startDate);
 }
