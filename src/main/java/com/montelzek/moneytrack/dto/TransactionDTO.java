@@ -19,6 +19,8 @@ public class TransactionDTO {
 
     private String categoryType;
 
+    private Long financialGoalId;
+
     @NotNull(message = "Can't be null.")
     private Long accountId;
 

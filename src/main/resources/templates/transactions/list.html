@@ -50,11 +50,11 @@
                     <i class="bi bi-wallet2"></i>
                     Budgets
                 </a>
-                <a th:href="@{dashboard}" class="nav-link text-dark">
+                <a th:href="@{financialGoals}" class="nav-link text-dark">
                     <i class="bi bi-piggy-bank"></i>
                     Goals
                 </a>
-                <a th:href="@{dashboard}" class="nav-link text-dark">
+                <a th:href="@{reports}" class="nav-link text-dark">
                     <i class="bi bi-bar-chart"></i>
                     Reports
                 </a>
@@ -105,6 +105,11 @@
                                 <span class="mx-2">---></span>
                                 <span class="badge bg-danger bg-opacity-25 text-danger px-3 py-2" th:text="${tempTransaction.category.name}"></span>
                             </span>
+                            <span th:if="${tempTransaction.category.type == 'FINANCIAL_GOAL'}">
+                                <span th:text="${tempTransaction.account.name}"></span>
+                                <span class="mx-2">---></span>
+                                <span class="badge bg-warning bg-opacity-25 text-warning px-3 py-2" th:text="${tempTransaction.category.name}"></span>
+                            </span>
                         </td>
                         <td class="align-middle" th:text="${tempTransaction.description}"></td>
                         <td class="align-middle" th:text="${tempTransaction.date}"></td>
@@ -141,6 +146,9 @@
                     </li>
                     <li class="nav-item">
                         <button class="nav-link text-success border border-dark" data-bs-toggle="tab" data-bs-target="#income" type="button">Income</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-warning border border-dark" data-bs-toggle="tab" data-bs-target="#goal" type="button">Goal</button>
                     </li>
                 </ul>
 
@@ -194,7 +202,7 @@
                     <div class="tab-pane fade show" id="income">
                         <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
                             <div class="mb-3">
-                                <label class="form-label" for="accountNameIncome">From: </label>
+                                <label class="form-label" for="accountNameIncome">To: </label>
                                 <select class="form-select" id="accountNameIncome" th:field="*{accountId}" required>
                                     <option th:each="account : ${accounts}"
                                             th:value="${account.id}"
@@ -228,6 +236,63 @@
                             <div class="mb-5">
                                 <label class="form-label" for="incomeDescription">Description: </label>
                                 <input type="text" id="incomeDescription" class="form-control" th:field="*{description}">
+                                <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-dark">Add Transaction</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade show" id="goal">
+                        <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label" for="accountNameGoal">From: </label>
+                                <select class="form-select" id="accountNameGoal" th:field="*{accountId}" required>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.name}">
+                                    </option>
+                                </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="financialGoalName">To: </label>
+                                <select class="form-select" id="financialGoalName" th:field="*{financialGoalId}" required>
+                                    <option th:each="financialGoal : ${financialGoals}"
+                                            th:value="${financialGoal.id}"
+                                            th:text="${financialGoal.name}"
+                                            th:disabled="${financialGoal.isAchieved}">
+                                    </option>
+                                </select>
+                                <div class="text-danger" th:if="${#fields.hasErrors('financialGoalId')}" th:errors="*{financialGoalId}"></div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="amountGoal">Amount: </label>
+                                <input type="number" step="0.01" id="amountGoal" class="form-control" th:field="*{amount}" required>
+                                <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
+                            </div>
+                            <div class="d-flex gap-5">
+                                <div class="w-50">
+                                    <label class="form-label" for="goalCategory">Transaction category: </label>
+                                    <select class="form-select mb-4 w-100" id="goalCategory" th:field="*{categoryId}" required>
+                                        <option th:each="goalCategory : ${financialGoalCategories}"
+                                                th:value="${goalCategory.id}"
+                                                th:text="${goalCategory.name}">
+                                        </option>
+                                    </select>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label" for="goalDate">Choose date: </label>
+                                    <input type="date" class="form-control" id="goalDate" th:field="*{date}" required>
+                                    <div class="text-danger" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></div>
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="goalDescription">Description: </label>
+                                <input type="text" id="goalDescription" class="form-control" th:field="*{description}">
                                 <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
                             </div>
                             <div class="modal-footer">

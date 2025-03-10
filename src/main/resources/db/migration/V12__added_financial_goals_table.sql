@@ -1,0 +1,9 @@
+CREATE TABLE financial_goals (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    target_amount DOUBLE PRECISION NOT NULL,
+    current_amount DOUBLE PRECISION NOT NULL DEFAULT 0,
+    is_achieved BOOLEAN NOT NULL DEFAULT TRUE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);

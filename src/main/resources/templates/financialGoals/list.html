@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Budgets</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/sidebar-styles.css">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-3 col-lg-2 sidebar d-flex flex-column vh-100">
+            <div class="d-flex flex-column flex-grow-1">
+                <a th:href="@{dashboard}" class="navbar-brand">
+                    <i class="bi bi-coin"></i>
+                    FinanceTracker
+                </a>
+                <hr class="horizontal dark mt-0 mb-2">
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+                <a th:href="@{accounts}" class="nav-link text-dark">
+                    <i class="bi bi-credit-card"></i>
+                    Accounts
+                </a>
+                <a th:href="@{transactions}" class="nav-link text-dark">
+                    <i class="bi bi-arrow-left-right"></i>
+                    Transactions
+                </a>
+                <a th:href="@{budgets}" class="nav-link text-dark">
+                    <i class="bi bi-wallet2"></i>
+                    Budgets
+                </a>
+                <a th:href="@{financialGoals}" class="nav-link bg-gradient active">
+                    <i class="bi bi-piggy-bank"></i>
+                    Goals
+                </a>
+                <a th:href="@{dashboard}" class="nav-link text-dark">
+                    <i class="bi bi-bar-chart"></i>
+                    Reports
+                </a>
+                <div class="logout-section mt-auto p-3">
+                    <form th:action="@{logout}" method="post">
+                        <button type="submit" class="logout-btn w-100 btn btn-dark">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9 col-lg-10 main-content">
+            <div class="d-flex gap-4 align-items-center mb-4">
+                <h2 class="mb-0">Financial Goals</h2>
+                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingFinancialGoalModal">
+                    <i class="bi bi-plus-lg me-2"></i>
+                    Add Financial Goal
+                </button>
+            </div>
+
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div class="col" th:each="tempFinancialGoal : ${financialGoals}">
+                    <div class="card h-100" th:classappend="${tempFinancialGoal.currentAmount >=
+                     tempFinancialGoal.targetAmount ? 'border-success' : ''}">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title" th:text="${tempFinancialGoal.name}"></h5>
+                                <div th:if="${tempFinancialGoal.isAchieved}" class="text-center text-success fw-medium mb-3">
+                                    <i class="bi bi-check-circle-fill"></i> Goal Achieved
+                                </div>
+                                <div>
+                                    <a th:data-id="${tempFinancialGoal.id}" class="btn btn-sm btn-outline-dark me-2 edit-btn">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="@{financialGoals/delete(financialGoalId=${tempFinancialGoal.id})}" class="btn btn-sm btn-outline-dark">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Current amount</span>
+                                    <span>Total amount</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold">
+                                    <span th:text="${#numbers.formatDecimal(tempFinancialGoal.currentAmount, 1, 'WHITESPACE', 2, 'POINT') + ' $'}"></span>
+                                    <span th:text="${#numbers.formatDecimal(tempFinancialGoal.targetAmount, 1, 'WHITESPACE', 2, 'POINT') + ' $'}"></span>
+                                </div>
+                            </div>
+                            <div class="mt-auto">
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success"
+                                         th:style="'width: ' + ${(tempFinancialGoal.currentAmount / tempFinancialGoal.targetAmount * 100)} + '%;'">
+                                    </div>
+                                </div>
+                                <div class="text-end small mt-1"
+                                     th:text="${#numbers.formatDecimal((tempFinancialGoal.currentAmount / tempFinancialGoal.targetAmount * 100), 1, 2) + ' %'}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="addingFinancialGoalModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Add financial goal</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/financialGoals/create}" th:object="${createFinancialGoal}" method="post">
+                    <div class="mb-3">
+                        <label class="form-label" for="name">Name: </label>
+                        <input type="text" id="name" class="form-control" th:field="*{name}" required maxlength="255">
+                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label" for="targetAmount">Target amount: </label>
+                        <input type="number" step="0.01" id="targetAmount" class="form-control" th:field="*{targetAmount}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('targetAmount')}" th:errors="*{targetAmount}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Add financial goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editFinancialGoalModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+     aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabelEdit">Edit financial goal</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form th:action="@{/financialGoals/update}" th:object="${editFinancialGoal}" method="post">
+                    <input type="hidden" th:field="*{id}" id="financialGoalId">
+                    <div class="mb-3">
+                        <label class="form-label" for="nameEdit">Name: </label>
+                        <input type="text" id="nameEdit" class="form-control" th:field="*{name}" required maxlength="255">
+                        <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="form-label" for="targetAmountEdit">Target amount: </label>
+                        <input type="number" step="0.01" id="targetAmountEdit" class="form-control mb-3" th:field="*{targetAmount}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('targetAmount')}" th:errors="*{targetAmount}"></div>
+                        <label class="form-label" for="currentAmountEdit">Current amount: </label>
+                        <input type="number" step="0.01" id="currentAmountEdit" class="form-control" th:field="*{currentAmount}" required>
+                        <div class="text-danger" th:if="${#fields.hasErrors('currentAmount')}" th:errors="*{currentAmount}"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-dark">Save financial goal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+<script src="/js/edit-goal.js"></script>
+</body>
+</html>
