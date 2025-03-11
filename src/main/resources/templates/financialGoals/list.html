@@ -132,7 +132,10 @@
                     </div>
                     <div class="mb-5">
                         <label class="form-label" for="targetAmount">Target amount: </label>
-                        <input type="number" step="0.01" id="targetAmount" class="form-control" th:field="*{targetAmount}" required>
+                        <div class="input-group">
+                            <input type="number" step="0.01" id="targetAmount" class="form-control" th:field="*{targetAmount}" required>
+                            <div class="input-group-text">$</div>
+                        </div>
                         <div class="text-danger" th:if="${#fields.hasErrors('targetAmount')}" th:errors="*{targetAmount}"></div>
                     </div>
                     <div class="modal-footer">
@@ -163,10 +166,16 @@
                     </div>
                     <div class="mb-5">
                         <label class="form-label" for="targetAmountEdit">Target amount: </label>
-                        <input type="number" step="0.01" id="targetAmountEdit" class="form-control mb-3" th:field="*{targetAmount}" required>
+                        <div class="input-group mb-3">
+                            <input type="number" step="0.01" id="targetAmountEdit" class="form-control" th:field="*{targetAmount}" required>
+                            <div class="input-group-text">$</div>
+                        </div>
                         <div class="text-danger" th:if="${#fields.hasErrors('targetAmount')}" th:errors="*{targetAmount}"></div>
                         <label class="form-label" for="currentAmountEdit">Current amount: </label>
-                        <input type="number" step="0.01" id="currentAmountEdit" class="form-control" th:field="*{currentAmount}" required>
+                        <div class="input-group">
+                            <input type="number" step="0.01" id="currentAmountEdit" class="form-control" th:field="*{currentAmount}" required>
+                            <div class="input-group-text">$</div>
+                        </div>
                         <div class="text-danger" th:if="${#fields.hasErrors('currentAmount')}" th:errors="*{currentAmount}"></div>
                     </div>
                     <div class="modal-footer">
