@@ -75,6 +75,14 @@
                     <i class="bi bi-plus-lg me-2"></i>
                     Add transaction
                 </button>
+                <div>
+                    <select class="form-select" id="pageSize" onchange="changePageSize(this)">
+                        <option value="5" th:selected="${transactionsPage.size} == 5">5 per page</option>
+                        <option value="10" th:selected="${transactionsPage.size} == 10">10 per page</option>
+                        <option value="15" th:selected="${transactionsPage.size} == 15">15 per page</option>
+                        <option value="20" th:selected="${transactionsPage.size} == 20">20 per page</option>
+                    </select>
+                </div>
             </div>
             <div class="table-responsive">
                 <table class="table text-center table-bordered table-hover mt-3">
@@ -87,7 +95,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr th:each="tempTransaction : ${transactions}">
+                    <tr th:each="tempTransaction : ${transactionsPage.content}">
                         <td class="align-middle text-start">
                             <a th:data-id="${tempTransaction.id}" class="btn btn-sm btn-outline-dark me-2 edit-btn">
                                 <i class="bi bi-pencil"></i>
@@ -125,6 +133,34 @@
                     </tr>
                     </tbody>
                 </table>
+                <div th:if="${transactionsPage.totalPages > 1}" class="d-flex justify-content-center mt-4">
+                    <ul class="pagination">
+                        <li class="page-item" th:classappend="${transactionsPage.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/transactions(page=0,
+                             size=${transactionsPage.size})}">First</a>
+                        </li>
+                        <li class="page-item" th:classappend="${transactionsPage.first} ? 'disabled'">
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number - 1},
+                             size=${transactionsPage.size})}">Previous</a>
+                        </li>
+
+                        <li th:each="pageNum : ${#numbers.sequence(0, transactionsPage.totalPages - 1)}"
+                            class="page-item" th:classappend="${pageNum == transactionsPage.number} ? 'active'">
+                            <a class="page-link"
+                               th:href="@{/transactions(page=${pageNum}, size=${transactionsPage.size})}"
+                               th:text="${pageNum + 1}"></a>
+                        </li>
+
+                        <li class="page-item" th:classappend="${transactionsPage.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number+1},
+                             size=${transactionsPage.size})}">Next</a>
+                        </li>
+                        <li class="page-item" th:classappend="${transactionsPage.last} ? 'disabled'">
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.totalPages - 1},
+                             size=${transactionsPage.size})}">Last</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -379,6 +415,10 @@
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
 <script src="/js/edit-transaction.js"></script>
-
+<script>
+    function changePageSize(select) {
+        window.location.href = `/transactions?page=0&size=${select.value}`;
+    }
+</script>
 </body>
 </html>
