@@ -7,6 +7,9 @@ import com.montelzek.moneytrack.model.FinancialGoal;
 import com.montelzek.moneytrack.model.Transaction;
 import com.montelzek.moneytrack.service.*;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -35,10 +38,16 @@ public class TransactionController {
     }
 
     @GetMapping
-    public String listTransactions(Model model) {
+    public String listTransactions(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+                                   Model model) {
+
+        Long id = userService.getCurrentUserId();
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Transaction> transactionPage = transactionService.findAccountsTransactions(id, pageable);
 
         TransactionDTO transactionDTO = new TransactionDTO();
         model.addAttribute("transaction", transactionDTO);
+        model.addAttribute("transactionsPage", transactionPage);
         prepareTransactionModel(model);
 
         return "transactions/list";
@@ -176,14 +185,14 @@ public class TransactionController {
 
     private void prepareTransactionModel(Model model) {
         Long id = userService.getCurrentUserId();
-        List<Transaction> transactions = transactionService.findAccountsTransactions(id);
+//        List<Transaction> transactions = transactionService.findAccountsTransactions(id);
         List<Category> categories = categoryService.findAll();
         List<Category> incomeCategories = categoryService.findByType("INCOME");
         List<Category> expenseCategories = categoryService.findByType("EXPENSE");
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
-        model.addAttribute("transactions", transactions);
+//        model.addAttribute("transactions", transactions);
         model.addAttribute("categories", categories);
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
