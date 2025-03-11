@@ -3,6 +3,8 @@ package com.montelzek.moneytrack.service;
 import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Transaction;
 import com.montelzek.moneytrack.repository.TransactionRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -25,8 +27,8 @@ public class TransactionService {
         this.exchangeRateService = exchangeRateService;
     }
 
-    public List<Transaction> findAccountsTransactions(Long id) {
-        return transactionRepository.findByAccount_User_Id_OrderByCreatedAt(id);
+    public Page<Transaction> findAccountsTransactions(Long id, Pageable pageable) {
+        return transactionRepository.findByAccount_User_Id_OrderByDateDesc(id, pageable);
     }
 
     public List<Transaction> getRecentTransactions(Long id) {
