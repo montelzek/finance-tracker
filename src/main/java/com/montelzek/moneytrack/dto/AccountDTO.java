@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -26,7 +27,7 @@ public class AccountDTO {
     private Account.Currency currency;
 
     @NotNull(message = "Can't be null.")
-    private Double balance;
+    private BigDecimal balance;
 
     private LocalDateTime createdAt;
 }

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 public class CreateFinancialGoalDTO {
@@ -17,5 +19,5 @@ public class CreateFinancialGoalDTO {
 
     @NotNull(message = "Budget size can't be empty.")
     @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
-    private Double targetAmount;
+    private BigDecimal targetAmount;
 }

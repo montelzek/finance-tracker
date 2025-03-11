@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -39,11 +40,11 @@ public class Budget {
     @NotNull
     @DecimalMin(value = "0.01")
     @Column(name = "budget_size")
-    private Double budgetSize;
+    private BigDecimal budgetSize;
 
     @NotNull
     @Column(name = "budget_spent")
-    private Double budgetSpent;
+    private BigDecimal budgetSpent;
 
     @NotNull
     @Column(name = "created_at")
@@ -64,7 +65,7 @@ public class Budget {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    public Budget(String name, LocalDate startDate, LocalDate endDate, Double budgetSize) {
+    public Budget(String name, LocalDate startDate, LocalDate endDate, BigDecimal budgetSize) {
         this.name = name;
         this.startDate = startDate;
         this.endDate = endDate;

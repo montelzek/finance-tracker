@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -26,7 +27,7 @@ public class Transaction {
     private Account account;
 
     @NotNull
-    private Double amount;
+    private BigDecimal amount;
 
     @NotNull
     @DateTimeFormat(pattern = "yyyy-mm-dd")
@@ -46,7 +47,7 @@ public class Transaction {
         createdAt = LocalDateTime.now();
     }
 
-    public Transaction(Double amount, LocalDate date, String description) {
+    public Transaction(BigDecimal amount, LocalDate date, String description) {
         this.amount = amount;
         this.date = date;
         this.description = description;

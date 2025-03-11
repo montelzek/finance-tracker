@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,11 +30,11 @@ public class FinancialGoal {
     @NotNull
     @DecimalMin(value = "0.01")
     @Column(name = "target_amount")
-    private Double targetAmount;
+    private BigDecimal targetAmount;
 
     @NotNull
     @Column(name = "current_amount")
-    private Double currentAmount;
+    private BigDecimal currentAmount;
 
     @NotNull
     @Column(name = "is_achieved")
@@ -53,7 +54,7 @@ public class FinancialGoal {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public FinancialGoal(String name, Double targetAmount) {
+    public FinancialGoal(String name, BigDecimal targetAmount) {
         this.name = name;
         this.targetAmount = targetAmount;
     }

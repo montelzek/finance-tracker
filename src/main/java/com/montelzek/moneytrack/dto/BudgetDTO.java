@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -26,7 +27,7 @@ public class BudgetDTO {
 
     @NotNull(message = "Budget size can't be empty.")
     @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
-    private Double budgetSize;
+    private BigDecimal budgetSize;
 
     @NotNull(message = "Category can't be empty.")
     private Integer categoryId;

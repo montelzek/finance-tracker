@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class Account {
     private AccountType accountType;
 
     @NotNull
-    private Double balance;
+    private BigDecimal balance;
 
     @NotNull
     @Enumerated(EnumType.STRING)
@@ -71,7 +72,7 @@ public class Account {
         JPY
     }
 
-    public Account(String name, AccountType accountType, Double balance, Currency currency) {
+    public Account(String name, AccountType accountType, BigDecimal balance, Currency currency) {
         this.name = name;
         this.accountType = accountType;
         this.balance = balance;
