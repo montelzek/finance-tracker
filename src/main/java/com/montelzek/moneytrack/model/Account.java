@@ -65,7 +65,10 @@ public class Account {
     public enum Currency {
         USD,
         EUR,
-        PLN
+        PLN,
+        GBP,
+        CHF,
+        JPY
     }
 
     public Account(String name, AccountType accountType, Double balance, Currency currency) {
