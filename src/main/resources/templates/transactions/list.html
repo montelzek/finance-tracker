@@ -27,7 +27,7 @@
 <body>
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-3 col-lg-2 sidebar d-flex flex-column vh-100">
+        <div class="col-md-3 col-lg-2 sidebar d-flex flex-column vh-100 position-fixed">
             <div class="d-flex flex-column flex-grow-1">
                 <a th:href="@{dashboard}" class="navbar-brand">
                     <i class="bi bi-coin"></i>
@@ -67,6 +67,8 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-md-3 col-lg-2"></div>
 
         <div class="col-md-9 col-lg-10 main-content">
             <div class="d-flex gap-4 align-items-center mb-4">
