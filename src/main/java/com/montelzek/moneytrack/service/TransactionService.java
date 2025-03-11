@@ -28,7 +28,7 @@ public class TransactionService {
     }
 
     public Page<Transaction> findAccountsTransactions(Long id, Pageable pageable) {
-        return transactionRepository.findByAccount_User_Id_OrderByDateDesc(id, pageable);
+        return transactionRepository.findByAccount_User_Id_OrderByDateDescCreatedAtDesc(id, pageable);
     }
 
     public List<Transaction> getRecentTransactions(Long id) {

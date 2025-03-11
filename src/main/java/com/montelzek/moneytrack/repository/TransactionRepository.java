@@ -13,7 +13,7 @@ import java.util.List;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    Page<Transaction> findByAccount_User_Id_OrderByDateDesc(Long userId, Pageable pageable);
+    Page<Transaction> findByAccount_User_Id_OrderByDateDescCreatedAtDesc(Long userId, Pageable pageable);
 
     List<Transaction> findTop6ByAccount_User_Id_OrderByDateDesc(Long userId);
 
