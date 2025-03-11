@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -86,7 +87,7 @@ public class BudgetController {
             );
             budget.setUser(user);
             budget.setCategory(category);
-            budget.setBudgetSpent(0.0);
+            budget.setBudgetSpent(BigDecimal.ZERO);
         }
         budgetService.save(budget);
 

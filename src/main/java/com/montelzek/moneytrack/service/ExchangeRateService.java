@@ -2,11 +2,12 @@ package com.montelzek.moneytrack.service;
 
 import com.montelzek.moneytrack.util.ExchangeRateResponse;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class ExchangeRateService {
     @Value("${currency.exchange.api.url}")
     private String apiUrl;
 
-    private Map<String, Double> rates = new HashMap<>();
+    private Map<String, BigDecimal> rates = new HashMap<>();
 
     private final RestTemplate restTemplate;
 
@@ -35,7 +36,11 @@ public class ExchangeRateService {
             ExchangeRateResponse response = restTemplate.getForObject(url, ExchangeRateResponse.class);
             System.out.println("API Response: " + response);
             if (response != null && "success".equals(response.getResult())) {
-                rates = response.getConversionRates();
+                Map<String, Double> doubleRates = response.getConversionRates();
+                rates.clear();
+                for (Map.Entry<String, Double> entry : doubleRates.entrySet()) {
+                    rates.put(entry.getKey(), new BigDecimal(entry.getValue().toString()));
+                }
             } else {
                 System.err.println("Failed to fetch rates: response is null, not successful, or conversion rates are null");
             }
@@ -44,16 +49,16 @@ public class ExchangeRateService {
         }
     }
 
-    public Double convertToUSD(String currency, Double amount) {
+    public BigDecimal convertToUSD(String currency, BigDecimal amount) {
 
         if ("USD".equals(currency)) {
             return amount;
         }
 
-        Double rate = rates.get(currency);
+        BigDecimal rate = rates.get(currency);
 
-        if (rate != null && rate != 0) {
-            return amount / rate;
+        if (rate != null && rate.compareTo(BigDecimal.ZERO) != 0) {
+            return amount.divide(rate, 2, RoundingMode.HALF_UP);
         } else {
             throw new RuntimeException("No rate for the currency: " + currency);
         }

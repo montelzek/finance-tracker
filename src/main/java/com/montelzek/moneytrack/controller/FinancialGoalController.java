@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -58,7 +59,7 @@ public class FinancialGoalController {
                 createFinancialGoalDTO.getTargetAmount()
         );
         financialGoal.setUser(user);
-        financialGoal.setCurrentAmount(0.0);
+        financialGoal.setCurrentAmount(BigDecimal.ZERO);
         financialGoal.setIsAchieved(false);
 
         financialGoalService.save(financialGoal);
@@ -80,9 +81,9 @@ public class FinancialGoalController {
         financialGoal.setTargetAmount(editFinancialGoalDTO.getTargetAmount());
         financialGoal.setCurrentAmount(editFinancialGoalDTO.getCurrentAmount());
 
-        if (editFinancialGoalDTO.getCurrentAmount() >= editFinancialGoalDTO.getTargetAmount() && !financialGoal.getIsAchieved()) {
+        if (editFinancialGoalDTO.getCurrentAmount().compareTo(editFinancialGoalDTO.getTargetAmount()) >= 0 && !financialGoal.getIsAchieved()) {
             financialGoal.setIsAchieved(true);
-        } else if (editFinancialGoalDTO.getCurrentAmount() < editFinancialGoalDTO.getTargetAmount() && financialGoal.getIsAchieved()) {
+        } else if (editFinancialGoalDTO.getCurrentAmount().compareTo(editFinancialGoalDTO.getTargetAmount()) < 0 && financialGoal.getIsAchieved()) {
             financialGoal.setIsAchieved(false);
         }
 

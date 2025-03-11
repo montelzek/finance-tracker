@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -46,8 +48,8 @@ public class TransactionService {
             if (!budgets.isEmpty()) {
                 Budget budget = budgets.getFirst();
                 String currency = String.valueOf(transaction.getAccount().getCurrency());
-                Double amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
-                budget.setBudgetSpent(budget.getBudgetSpent() + amountInUSD);
+                BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                budget.setBudgetSpent(budget.getBudgetSpent().add(amountInUSD));
                 budgetService.save(budget);
             }
         }
@@ -62,80 +64,80 @@ public class TransactionService {
                 .orElseThrow(() -> new RuntimeException("Transaction not found with id: " + id));
     }
 
-    public Double getIncomeFromLastMonth(Long userId) {
+    public BigDecimal getIncomeFromLastMonth(Long userId) {
 
         List<Transaction> transactions = transactionRepository.findIncomeTransactionsFromPastMonth(userId);
-        Double totalIncome = 0.0;
+        BigDecimal totalIncome = BigDecimal.ZERO;
 
         for (Transaction transaction : transactions) {
-            totalIncome += exchangeRateService.convertToUSD(
-                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
+            totalIncome = totalIncome.add(exchangeRateService.convertToUSD(
+                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount()));
         }
 
         return totalIncome;
     }
 
-    public Double getExpensesFromLastMonth(Long userId) {
+    public BigDecimal getExpensesFromLastMonth(Long userId) {
 
         List<Transaction> transactions = transactionRepository.findExpenseTransactionsFromPastMonth(userId);
-        Double totalExpenses = 0.0;
+        BigDecimal totalExpenses = BigDecimal.ZERO;
 
         for (Transaction transaction : transactions) {
-            totalExpenses += exchangeRateService.convertToUSD(
-                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
+            totalExpenses = totalExpenses.add(exchangeRateService.convertToUSD(
+                    String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount()));
         }
 
         return totalExpenses;
     }
 
-    public Map<String, Double> getExpensesByCategoryFromLastMonth(Long userId) {
+    public Map<String, BigDecimal> getExpensesByCategoryFromLastMonth(Long userId) {
 
         List<Transaction> transactions = transactionRepository.findExpenseTransactionsFromPastMonth(userId);
-        return getStringDoubleMap(transactions);
+        return getStringBigDecimalMap(transactions);
     }
 
-    private Map<String, Double> getStringDoubleMap(List<Transaction> transactions) {
-        Map<String, Double> transactionsByCategory = new HashMap<>();
+    private Map<String, BigDecimal> getStringBigDecimalMap(List<Transaction> transactions) {
+        Map<String, BigDecimal> transactionsByCategory = new HashMap<>();
 
         for (Transaction transaction : transactions) {
 
             String categoryName = transaction.getCategory().getName();
-            Double amount = exchangeRateService.convertToUSD(
+            BigDecimal amount = exchangeRateService.convertToUSD(
                     String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
 
-            amount = Math.round(amount * 100.0) / 100.0;
-            transactionsByCategory.merge(categoryName, amount, Double::sum);
+            amount = amount.setScale(2, RoundingMode.HALF_UP);
+            transactionsByCategory.merge(categoryName, amount, BigDecimal::add);
         }
 
         return transactionsByCategory;
     }
 
 
-    public Map<String, Map<String, Double>> getTransactionsFromLastSixMonths(Long userId) {
+    public Map<String, Map<String, BigDecimal>> getTransactionsFromLastSixMonths(Long userId) {
 
         LocalDate sixMonthAgo = LocalDate.now().minusMonths(6).withDayOfMonth(1);
         List<Transaction> transactions = transactionRepository.findTransactionsFromLastSixMonths(userId, sixMonthAgo);
 
-        Map<String, Map<String, Double>> transactionsGroupByMonth = new LinkedHashMap<>();
+        Map<String, Map<String, BigDecimal>> transactionsGroupByMonth = new LinkedHashMap<>();
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM yyyy");
         for (int i = 5; i >= 0; i--) {
             LocalDate month = LocalDate.now().minusMonths(i).withDayOfMonth(1);
             String monthKey = month.format(formatter);
             transactionsGroupByMonth.put(monthKey, new HashMap<>());
-            transactionsGroupByMonth.get(monthKey).put("INCOME", 0.0);
-            transactionsGroupByMonth.get(monthKey).put("EXPENSE", 0.0);
+            transactionsGroupByMonth.get(monthKey).put("INCOME", BigDecimal.ZERO);
+            transactionsGroupByMonth.get(monthKey).put("EXPENSE", BigDecimal.ZERO);
         }
 
         for (Transaction transaction : transactions) {
             String monthKey = transaction.getDate().withDayOfMonth(1).format(formatter);
             String type = transaction.getCategory().getType();
-            Double amount = exchangeRateService.convertToUSD(
+            BigDecimal amount = exchangeRateService.convertToUSD(
                     String.valueOf(transaction.getAccount().getCurrency()), transaction.getAmount());
 
             if (transactionsGroupByMonth.containsKey(monthKey)) {
-                Double current = transactionsGroupByMonth.get(monthKey).get(type);
-                transactionsGroupByMonth.get(monthKey).put(type, current + amount);
+                BigDecimal current = transactionsGroupByMonth.get(monthKey).get(type);
+                transactionsGroupByMonth.get(monthKey).put(type, current.add(amount));
             }
         }
 

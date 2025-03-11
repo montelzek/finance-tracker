@@ -4,8 +4,8 @@ import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -45,13 +45,13 @@ public class AccountService {
         accountRepository.deleteById(id);
     }
 
-    public Double getTotalBalance(Long userId) {
+    public BigDecimal getTotalBalance(Long userId) {
 
         List<Account> accounts = accountRepository.findByUserId(userId);
-        Double totalBalance = 0.0;
+        BigDecimal totalBalance = BigDecimal.ZERO;
 
         for (Account account : accounts) {
-            totalBalance += exchangeRateService.convertToUSD(String.valueOf(account.getCurrency()), account.getBalance());
+            totalBalance = totalBalance.add(exchangeRateService.convertToUSD(String.valueOf(account.getCurrency()), account.getBalance()));
         }
 
         return totalBalance;

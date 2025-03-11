@@ -15,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -73,9 +74,9 @@ public class TransactionController {
             // Reversing balance
 
             if (existingTransaction.getCategory().getType().equals("INCOME")) {
-                existingAccount.setBalance(existingAccount.getBalance() - existingTransaction.getAmount());
+                existingAccount.setBalance(existingAccount.getBalance().subtract(existingTransaction.getAmount()));
             } else {
-                existingAccount.setBalance(existingAccount.getBalance() + existingTransaction.getAmount());
+                existingAccount.setBalance(existingAccount.getBalance().add(existingTransaction.getAmount()));
             }
 
             // If account is changing then save the old account balance
@@ -95,9 +96,9 @@ public class TransactionController {
             // Updating balance
 
             if (category.getType().equals("INCOME")) {
-                account.setBalance(account.getBalance() + existingTransaction.getAmount());
+                account.setBalance(account.getBalance().add(existingTransaction.getAmount()));
             } else {
-                account.setBalance(account.getBalance() - existingTransaction.getAmount());
+                account.setBalance(account.getBalance().subtract(existingTransaction.getAmount()));
             }
 
             transactionService.save(existingTransaction);
@@ -112,9 +113,9 @@ public class TransactionController {
             transaction.setCategory(category);
 
             if (category.getType().equals("INCOME")) {
-                account.setBalance(account.getBalance() + transaction.getAmount());
+                account.setBalance(account.getBalance().add(transaction.getAmount()));
             } else {
-                account.setBalance(account.getBalance() - transaction.getAmount());
+                account.setBalance(account.getBalance().subtract(transaction.getAmount()));
             }
 
             if (category.getType().equals("FINANCIAL_GOAL")) {
@@ -129,11 +130,11 @@ public class TransactionController {
                 }
 
                 String currency = account.getCurrency().toString();
-                Double amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
 
-                financialGoal.setCurrentAmount(financialGoal.getCurrentAmount() + amountInUSD);
+                financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().add(amountInUSD));
 
-                if (financialGoal.getCurrentAmount() >= financialGoal.getTargetAmount()) {
+                if (financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0) {
                     financialGoal.setIsAchieved(true);
                 }
 
@@ -155,9 +156,9 @@ public class TransactionController {
         // Reversing balance
 
         if (transaction.getCategory().getType().equals("INCOME")) {
-            account.setBalance(account.getBalance() - transaction.getAmount());
+            account.setBalance(account.getBalance().subtract(transaction.getAmount()));
         } else {
-            account.setBalance(account.getBalance() + transaction.getAmount());
+            account.setBalance(account.getBalance().add(transaction.getAmount()));
         }
 
         accountService.save(account);
