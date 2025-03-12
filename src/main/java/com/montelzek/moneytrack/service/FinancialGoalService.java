@@ -31,4 +31,8 @@ public class FinancialGoalService {
     public void deleteById(Long id) {
         financialGoalRepository.deleteById(id);
     }
+
+    public List<FinancialGoal> findTop3Goals(Long userId) {
+        return financialGoalRepository.findTop3ByUserId(userId);
+    }
 }
