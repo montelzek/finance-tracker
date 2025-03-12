@@ -12,7 +12,9 @@ import java.util.List;
 public interface BudgetRepository extends JpaRepository<Budget, Long> {
 
     List<Budget> findByUserId_OrderByCreatedAt(Long userId);
-    List<Budget> findByCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-            Category category, LocalDate startDate, LocalDate endDate
+    List<Budget> findByUserIdAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            Long id, Category category, LocalDate startDate, LocalDate endDate
     );
+    List<Budget> findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+            Long id, LocalDate startDate, LocalDate endDate);
 }
