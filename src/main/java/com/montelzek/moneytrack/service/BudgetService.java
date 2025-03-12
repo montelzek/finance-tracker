@@ -34,8 +34,12 @@ public class BudgetService {
         budgetRepository.deleteById(id);
     }
 
-    public List<Budget> findBudgetsByCategoryAndDate(Category category, LocalDate date) {
-        return budgetRepository.findByCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(category, date, date);
+    public List<Budget> findBudgetsByCategoryAndDate(Long userId, Category category, LocalDate date) {
+        return budgetRepository.findByUserIdAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                userId, category, date, date);
     }
 
+    public List<Budget> findActiveBudgets(Long userId, LocalDate date) {
+        return budgetRepository.findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(userId, date, date);
+    }
 }
