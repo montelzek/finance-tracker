@@ -10,4 +10,6 @@ import java.util.List;
 public interface FinancialGoalRepository extends JpaRepository<FinancialGoal, Long> {
 
     List<FinancialGoal> findByUserId_OrderByCreatedAt(Long userId);
+
+    List<FinancialGoal> findTop3ByUserId(Long userId);
 }
