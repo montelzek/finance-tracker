@@ -5,9 +5,7 @@ import com.montelzek.moneytrack.model.Role;
 import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.RoleRepository;
 import com.montelzek.moneytrack.repository.UserRepository;
-import com.montelzek.moneytrack.service.AccountService;
-import com.montelzek.moneytrack.service.TransactionService;
-import com.montelzek.moneytrack.service.UserService;
+import com.montelzek.moneytrack.service.*;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -17,7 +15,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class AuthController {
@@ -28,14 +30,20 @@ public class AuthController {
     private final UserService userService;
     private final AccountService accountService;
     private final TransactionService transactionService;
+    private final ExchangeRateService exchangeRateService;
+    private final BudgetService budgetService;
+    private final FinancialGoalService financialGoalService;
 
-    public AuthController(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserService userService, AccountService accountService, TransactionService transactionService) {
+    public AuthController(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserService userService, AccountService accountService, TransactionService transactionService, ExchangeRateService exchangeRateService, BudgetService budgetService, FinancialGoalService financialGoalService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
         this.accountService = accountService;
         this.transactionService = transactionService;
+        this.exchangeRateService = exchangeRateService;
+        this.budgetService = budgetService;
+        this.financialGoalService = financialGoalService;
     }
 
     @GetMapping("/login")
@@ -82,6 +90,7 @@ public class AuthController {
         Long userId = userService.getCurrentUserId();
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
+        LocalDate today = LocalDate.now();
 
         model.addAttribute("user", user);
         model.addAttribute("totalBalance", accountService.getTotalBalance(userId));
@@ -90,6 +99,9 @@ public class AuthController {
         model.addAttribute("expensesByCategory", transactionService.getExpensesByCategoryFromLastMonth(userId));
         model.addAttribute("transactionsLastSixMonths", transactionService.getTransactionsFromLastSixMonths(userId));
         model.addAttribute("recentTransactions", transactionService.getRecentTransactions(userId));
+        model.addAttribute("rates", exchangeRateService.getRates());
+        model.addAttribute("activeBudgets", budgetService.findActiveBudgets(userId, today));
+        model.addAttribute("financialGoals", financialGoalService.findTop3Goals(userId));
 
         return "dashboard";
     }
