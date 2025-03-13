@@ -47,6 +47,10 @@ public class Transaction {
         createdAt = LocalDateTime.now();
     }
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "financial_goal_id")
+    private FinancialGoal financialGoal;
+
     public Transaction(BigDecimal amount, LocalDate date, String description) {
         this.amount = amount;
         this.date = date;
