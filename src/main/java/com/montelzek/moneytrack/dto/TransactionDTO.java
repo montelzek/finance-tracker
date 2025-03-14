@@ -22,6 +22,8 @@ public class TransactionDTO {
 
     private Long financialGoalId;
 
+    private Long budgetId;
+
     @NotNull(message = "Can't be null.")
     private Long accountId;
 
