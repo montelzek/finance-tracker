@@ -354,58 +354,155 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
-                    <input type="hidden" th:field="*{id}" id="transactionId">
-                    <div class="mb-3">
-                        <label class="form-label" for="accountEdit">From: </label>
-                        <select class="form-select" id="accountEdit" th:field="*{accountId}" required>
-                            <option th:each="account : ${accounts}"
-                                    th:value="${account.id}"
-                                    th:text="${account.name + ' ' + account.currency}">
-                            </option>
-                        </select>
-                        <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
-                    </div>
-                    <div class="mb-5">
-                        <label class="form-label" for="amountEdit">Amount: </label>
-                        <input type="number" step="0.01" id="amountEdit" class="form-control" th:field="*{amount}" required>
-                        <div class="text-danger" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}"></div>
-                    </div>
-                    <div class="d-flex gap-5">
-                        <div class="w-50">
-                            <label class="form-label" for="categoryEdit">Choose category: </label>
-                            <select class="form-select mb-4 w-100" id="categoryEdit" th:field="*{categoryId}" required>
-                                <optgroup label="Expense Categories" id="expenseCategoriesGroup">
-                                    <option th:each="expenseCategory : ${expenseCategories}"
-                                            th:value="${expenseCategory.id}"
-                                            th:text="${expenseCategory.name}">
+                <ul class="nav nav-pills nav-fill mb-3 me-3" id="editTransactionTypeTabs">
+                    <li class="nav-item">
+                        <button class="nav-link text-danger border border-dark" data-bs-toggle="tab" data-bs-target="#editExpense" type="button">Expense</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-success border border-dark" data-bs-toggle="tab" data-bs-target="#editIncome" type="button">Income</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link text-warning border border-dark" data-bs-toggle="tab" data-bs-target="#editGoal" type="button">Goal</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane fade" id="editExpense">
+                        <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                            <input type="hidden" th:field="*{id}" id="editExpenseTransactionId">
+                            <div class="mb-3">
+                                <label class="form-label" for="editAccountExpense">From: </label>
+                                <select class="form-select" id="editAccountExpense" th:field="*{accountId}" required>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.name + ' ' + account.currency}">
                                     </option>
-                                </optgroup>
-                                <optgroup label="Income Categories" id="incomeCategoriesGroup">
-                                    <option th:each="incomeCategory : ${incomeCategories}"
-                                            th:value="${incomeCategory.id}"
-                                            th:text="${incomeCategory.name}">
+                                </select>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="editAmountExpense">Amount: </label>
+                                <input type="number" step="0.01" id="editAmountExpense" class="form-control" th:field="*{amount}" required>
+                            </div>
+                            <div class="d-flex gap-5">
+                                <div class="w-50">
+                                    <label class="form-label" for="editExpenseCategory">Choose expense category: </label>
+                                    <select class="form-select mb-4 w-100" id="editExpenseCategory" th:field="*{categoryId}" required>
+                                        <option th:each="expenseCategory : ${expenseCategories}"
+                                                th:value="${expenseCategory.id}"
+                                                th:text="${expenseCategory.name}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label" for="editExpenseDate">Choose date: </label>
+                                    <input type="date" class="form-control" id="editExpenseDate" th:field="*{date}" required>
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="editExpenseDescription">Description: </label>
+                                <input type="text" id="editExpenseDescription" class="form-control" th:field="*{description}">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-dark">Save</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="editIncome">
+                        <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                            <input type="hidden" th:field="*{id}" id="editIncomeTransactionId">
+                            <div class="mb-3">
+                                <label class="form-label" for="editAccountIncome">To: </label>
+                                <select class="form-select" id="editAccountIncome" th:field="*{accountId}" required>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.name + ' ' + account.currency}">
                                     </option>
-                                </optgroup>
-                            </select>
-                            <div class="text-danger" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
-                        </div>
-                        <div class="w-50">
-                            <label class="form-label" for="dateEdit">Choose date: </label>
-                            <input type="date" class="form-control" id="dateEdit" th:field="*{date}" required>
-                            <div class="text-danger" th:if="${#fields.hasErrors('date')}" th:errors="*{date}"></div>
-                        </div>
+                                </select>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="editAmountIncome">Amount: </label>
+                                <input type="number" step="0.01" id="editAmountIncome" class="form-control" th:field="*{amount}" required>
+                            </div>
+                            <div class="d-flex gap-5">
+                                <div class="w-50">
+                                    <label class="form-label" for="editIncomeCategory">Choose income category: </label>
+                                    <select class="form-select mb-4 w-100" id="editIncomeCategory" th:field="*{categoryId}" required>
+                                        <option th:each="incomeCategory : ${incomeCategories}"
+                                                th:value="${incomeCategory.id}"
+                                                th:text="${incomeCategory.name}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label" for="editIncomeDate">Choose date: </label>
+                                    <input type="date" class="form-control" id="editIncomeDate" th:field="*{date}" required>
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="editIncomeDescription">Description: </label>
+                                <input type="text" id="editIncomeDescription" class="form-control" th:field="*{description}">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-dark">Save</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="mb-5">
-                        <label class="form-label" for="descriptionEdit">Description: </label>
-                        <input type="text" id="descriptionEdit" class="form-control" th:field="*{description}">
-                        <div class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+
+                    <div class="tab-pane fade" id="editGoal">
+                        <form th:action="@{/transactions/save}" th:object="${transaction}" method="post">
+                            <input type="hidden" th:field="*{id}" id="editGoalTransactionId">
+                            <div class="mb-3">
+                                <label class="form-label" for="editAccountGoal">From: </label>
+                                <select class="form-select" id="editAccountGoal" th:field="*{accountId}" required>
+                                    <option th:each="account : ${accounts}"
+                                            th:value="${account.id}"
+                                            th:text="${account.name + ' ' + account.currency}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="editFinancialGoalName">To: </label>
+                                <select class="form-select" id="editFinancialGoalName" th:field="*{financialGoalId}" required>
+                                    <option th:each="financialGoal : ${financialGoals}"
+                                            th:value="${financialGoal.id}"
+                                            th:text="${financialGoal.name}"
+                                            th:disabled="${financialGoal.isAchieved}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="editAmountGoal">Amount: </label>
+                                <input type="number" step="0.01" id="editAmountGoal" class="form-control" th:field="*{amount}" required>
+                            </div>
+                            <div class="d-flex gap-5">
+                                <div class="w-50">
+                                    <label class="form-label" for="editGoalCategory">Transaction category: </label>
+                                    <select class="form-select mb-4 w-100" id="editGoalCategory" th:field="*{categoryId}" required>
+                                        <option th:each="goalCategory : ${financialGoalCategories}"
+                                                th:value="${goalCategory.id}"
+                                                th:text="${goalCategory.name}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="w-50">
+                                    <label class="form-label" for="editGoalDate">Choose date: </label>
+                                    <input type="date" class="form-control" id="editGoalDate" th:field="*{date}" required>
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="form-label" for="editGoalDescription">Description: </label>
+                                <input type="text" id="editGoalDescription" class="form-control" th:field="*{description}">
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-dark">Save</button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-dark">Save</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
