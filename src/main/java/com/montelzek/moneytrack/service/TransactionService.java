@@ -38,24 +38,14 @@ public class TransactionService {
     }
 
     public void save(Transaction transaction) {
-        transactionRepository.save(transaction);
 
-        if (transaction.getCategory().getType().equals("EXPENSE")) {
-            List<Budget> budgets = budgetService.findBudgetsByCategoryAndDate(
-                    transaction.getCategory(),
-                    transaction.getDate()
-            );
-            if (!budgets.isEmpty()) {
-                Budget budget = budgets.getFirst();
-                String currency = String.valueOf(transaction.getAccount().getCurrency());
-                BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
-                budget.setBudgetSpent(budget.getBudgetSpent().add(amountInUSD));
-                budgetService.save(budget);
-            }
-        }
+        applyBudgetEffect(transaction);
+        transactionRepository.save(transaction);
     }
 
     public void deleteById(Long id) {
+        Transaction transaction = findById(id);
+        revertBudgetEffect(transaction);
         transactionRepository.deleteById(id);
     }
 
@@ -144,5 +134,36 @@ public class TransactionService {
         return transactionsGroupByMonth;
     }
 
+    public void revertBudgetEffect(Transaction transaction) {
+        if (transaction.getBudget() != null && "EXPENSE".equals(transaction.getCategory().getType())) {
+            Budget budget = transaction.getBudget();
+            String currency = String.valueOf(transaction.getAccount().getCurrency());
+            BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+            budget.setBudgetSpent(budget.getBudgetSpent().subtract(amountInUSD));
+            budgetService.save(budget);
+            transaction.setBudget(null);
+        }
+    }
 
+    public void applyBudgetEffect(Transaction transaction) {
+        if ("EXPENSE".equals(transaction.getCategory().getType())) {
+            List<Budget> budgets = budgetService.findBudgetsByCategoryAndDate(
+                    transaction.getAccount().getUser().getId(),
+                    transaction.getCategory(),
+                    transaction.getDate()
+            );
+            if (!budgets.isEmpty()) {
+                Budget budget = budgets.getFirst();
+                transaction.setBudget(budget);
+                String currency = String.valueOf(transaction.getAccount().getCurrency());
+                BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                budget.setBudgetSpent(budget.getBudgetSpent().add(amountInUSD));
+                budgetService.save(budget);
+            } else {
+                transaction.setBudget(null);
+            }
+        } else {
+            transaction.setBudget(null);
+        }
+    }
 }
