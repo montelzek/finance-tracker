@@ -57,7 +57,6 @@ public class TransactionController {
     @PostMapping("/save")
     public String saveTransaction(@Valid @ModelAttribute("transaction") TransactionDTO transactionDTO,
                                   BindingResult result, Model model) {
-
         if (result.hasErrors()) {
             model.addAttribute("transaction", transactionDTO);
             prepareTransactionModel(model);
@@ -68,42 +67,81 @@ public class TransactionController {
         Category category = categoryService.findById(transactionDTO.getCategoryId());
 
         if (transactionDTO.getId() != null) {
-            Transaction existingTransaction = transactionService.findById(transactionDTO.getId()); // TRANSACTION before update
-            Account existingAccount = existingTransaction.getAccount(); // OLD ACCOUNT
+            Transaction existingTransaction = transactionService.findById(transactionDTO.getId());
+            Account existingAccount = existingTransaction.getAccount();
 
-            // Reversing balance
+            // Revert transaction affect
 
-            if (existingTransaction.getCategory().getType().equals("INCOME")) {
-                existingAccount.setBalance(existingAccount.getBalance().subtract(existingTransaction.getAmount()));
-            } else {
-                existingAccount.setBalance(existingAccount.getBalance().add(existingTransaction.getAmount()));
+            switch (existingTransaction.getCategory().getType()) {
+                case "INCOME" ->
+                        existingAccount.setBalance(existingAccount.getBalance().subtract(existingTransaction.getAmount()));
+                case "EXPENSE" ->
+                        existingAccount.setBalance(existingAccount.getBalance().add(existingTransaction.getAmount()));
+                case "FINANCIAL_GOAL" -> {
+                    Long financialGoalId = (transactionDTO.getFinancialGoalId() != null)
+                            ? transactionDTO.getFinancialGoalId()
+                            : (existingTransaction.getFinancialGoal() != null ? existingTransaction.getFinancialGoal().getId() : null);
+                    if (financialGoalId != null) {
+                        FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
+                        String currency = existingAccount.getCurrency().toString();
+                        BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, existingTransaction.getAmount());
+                        financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().subtract(amountInUSD));
+                        financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
+                        financialGoalService.save(financialGoal);
+                    }
+                    existingAccount.setBalance(existingAccount.getBalance().add(existingTransaction.getAmount()));
+                }
             }
 
-            // If account is changing then save the old account balance
+            // If account not changing then save account
 
             if (!existingAccount.getId().equals(account.getId())) {
                 accountService.save(existingAccount);
             }
 
-            // Updating transaction
+            // Update Transaction
 
             existingTransaction.setAccount(account);
             existingTransaction.setDate(transactionDTO.getDate());
             existingTransaction.setAmount(transactionDTO.getAmount());
             existingTransaction.setCategory(category);
             existingTransaction.setDescription(transactionDTO.getDescription());
+            existingTransaction.setFinancialGoal(category.getType().equals("FINANCIAL_GOAL") && transactionDTO.getFinancialGoalId() != null
+                    ? financialGoalService.findById(transactionDTO.getFinancialGoalId())
+                    : null);
 
-            // Updating balance
+            // Add new transaction effect
 
-            if (category.getType().equals("INCOME")) {
-                account.setBalance(account.getBalance().add(existingTransaction.getAmount()));
-            } else {
-                account.setBalance(account.getBalance().subtract(existingTransaction.getAmount()));
+            switch (category.getType()) {
+                case "INCOME" -> account.setBalance(account.getBalance().add(existingTransaction.getAmount()));
+                case "EXPENSE" -> account.setBalance(account.getBalance().subtract(existingTransaction.getAmount()));
+                case "FINANCIAL_GOAL" -> {
+                    Long financialGoalId = transactionDTO.getFinancialGoalId();
+                    if (financialGoalId == null) {
+                        result.rejectValue("financialGoalId", "error.goal", "Financial Goal ID is required for this transaction type!");
+                        prepareTransactionModel(model);
+                        return "transactions/list";
+                    }
+                    FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
+                    if (financialGoal.getIsAchieved()) {
+                        result.rejectValue("financialGoalId", "error.goal", "Can't add transaction to already achieved goal!");
+                        prepareTransactionModel(model);
+                        return "transactions/list";
+                    }
+                    String currency = account.getCurrency().toString();
+                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, existingTransaction.getAmount());
+                    financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().add(amountInUSD));
+                    financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
+                    financialGoalService.save(financialGoal);
+                    account.setBalance(account.getBalance().subtract(existingTransaction.getAmount()));
+                }
             }
 
             transactionService.save(existingTransaction);
+            accountService.save(account);
 
         } else {
+
             Transaction transaction = new Transaction(
                     transactionDTO.getAmount(),
                     transactionDTO.getDate(),
@@ -112,36 +150,34 @@ public class TransactionController {
             transaction.setAccount(account);
             transaction.setCategory(category);
 
-            if (category.getType().equals("INCOME")) {
-                account.setBalance(account.getBalance().add(transaction.getAmount()));
-            } else {
-                account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-            }
-
-            if (category.getType().equals("FINANCIAL_GOAL")) {
-
-                Long financialGoalId = transactionDTO.getFinancialGoalId();
-                FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
-
-                if (financialGoal.getIsAchieved()) {
-                    result.rejectValue("financialGoalId", "error.goal", "Can't add transaction to already achieved goal!");
-                    prepareTransactionModel(model);
-                    return "transactions/list";
+            switch (category.getType()) {
+                case "INCOME" -> account.setBalance(account.getBalance().add(transaction.getAmount()));
+                case "EXPENSE" -> account.setBalance(account.getBalance().subtract(transaction.getAmount()));
+                case "FINANCIAL_GOAL" -> {
+                    Long financialGoalId = transactionDTO.getFinancialGoalId();
+                    if (financialGoalId == null) {
+                        result.rejectValue("financialGoalId", "error.goal", "Financial Goal ID is required for this transaction type!");
+                        prepareTransactionModel(model);
+                        return "transactions/list";
+                    }
+                    FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
+                    if (financialGoal.getIsAchieved()) {
+                        result.rejectValue("financialGoalId", "error.goal", "Can't add transaction to already achieved goal!");
+                        prepareTransactionModel(model);
+                        return "transactions/list";
+                    }
+                    transaction.setFinancialGoal(financialGoal);
+                    String currency = account.getCurrency().toString();
+                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                    financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().add(amountInUSD));
+                    financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
+                    financialGoalService.save(financialGoal);
+                    account.setBalance(account.getBalance().subtract(transaction.getAmount()));
                 }
-
-                String currency = account.getCurrency().toString();
-                BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
-
-                financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().add(amountInUSD));
-
-                if (financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0) {
-                    financialGoal.setIsAchieved(true);
-                }
-
-                financialGoalService.save(financialGoal);
             }
 
             transactionService.save(transaction);
+            accountService.save(account);
         }
 
         return "redirect:/transactions";
@@ -155,10 +191,20 @@ public class TransactionController {
 
         // Reversing balance
 
-        if (transaction.getCategory().getType().equals("INCOME")) {
-            account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-        } else {
-            account.setBalance(account.getBalance().add(transaction.getAmount()));
+        switch (transaction.getCategory().getType()) {
+            case "INCOME" -> account.setBalance(account.getBalance().subtract(transaction.getAmount()));
+            case "EXPENSE" -> account.setBalance(account.getBalance().add(transaction.getAmount()));
+            case "FINANCIAL_GOAL" -> {
+                account.setBalance(account.getBalance().add(transaction.getAmount()));
+                FinancialGoal financialGoal = transaction.getFinancialGoal();
+                if (financialGoal != null) {
+                    String currency = account.getCurrency().toString();
+                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                    financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().subtract(amountInUSD));
+                    financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
+                    financialGoalService.save(financialGoal);
+                }
+            }
         }
 
         accountService.save(account);
@@ -186,14 +232,12 @@ public class TransactionController {
 
     private void prepareTransactionModel(Model model) {
         Long id = userService.getCurrentUserId();
-//        List<Transaction> transactions = transactionService.findAccountsTransactions(id);
         List<Category> categories = categoryService.findAll();
         List<Category> incomeCategories = categoryService.findByType("INCOME");
         List<Category> expenseCategories = categoryService.findByType("EXPENSE");
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
-//        model.addAttribute("transactions", transactions);
         model.addAttribute("categories", categories);
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
