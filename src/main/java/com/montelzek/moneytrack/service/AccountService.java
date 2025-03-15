@@ -1,5 +1,6 @@
 package com.montelzek.moneytrack.service;
 
+import com.montelzek.moneytrack.dto.AccountDTO;
 import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.AccountRepository;
@@ -26,15 +27,8 @@ public class AccountService {
         return accountRepository.findByUserIdOrderByCreatedAt(id);
     }
 
-    @Transactional
-    public void saveAccount(Account account, Long userId) {
-
-        if (account.getId() == null) {
-            User user = userService.findById(userId)
-                    .orElseThrow(() -> new IllegalStateException("User not found"));
-            account.setUser(user);
-        }
-        accountRepository.save(account);
+    public Account save(Account account) {
+        return accountRepository.save(account);
     }
 
     public Account findById(Long id) {
@@ -42,8 +36,50 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Did not find account of id: " + id));
     }
 
-    public void deleteAccount(Long id) {
+    public void deleteById(Long id) {
         accountRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void saveAccount(AccountDTO accountDTO) {
+        if (accountDTO.getId() != null) {
+            updateAccount(accountDTO);
+        } else {
+            createAccount(accountDTO);
+        }
+    }
+
+    @Transactional
+    public void createAccount(AccountDTO accountDTO) {
+        Long userId = userService.getCurrentUserId();
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        Account account = new Account(
+                accountDTO.getName(),
+                accountDTO.getAccountType(),
+                accountDTO.getBalance(),
+                accountDTO.getCurrency()
+        );
+        account.setUser(user);
+
+        save(account);
+    }
+
+    @Transactional
+    public void updateAccount(AccountDTO accountDTO) {
+        if (accountDTO.getId() == null) {
+            throw new IllegalArgumentException("Budget ID can't be null");
+        }
+
+        Account account = findById(accountDTO.getId());
+
+        account.setName(accountDTO.getName());
+        account.setAccountType(accountDTO.getAccountType());
+        account.setBalance(accountDTO.getBalance());
+        account.setCurrency(accountDTO.getCurrency());
+
+        save(account);
     }
 
     public BigDecimal getTotalBalance(Long userId) {
@@ -56,6 +92,17 @@ public class AccountService {
         }
 
         return totalBalance;
+    }
+
+    public AccountDTO convertToDTO(Account account) {
+
+        AccountDTO accountDTO = new AccountDTO();
+        accountDTO.setId(account.getId());
+        accountDTO.setName(account.getName());
+        accountDTO.setAccountType(account.getAccountType());
+        accountDTO.setBalance(account.getBalance());
+        accountDTO.setCurrency(account.getCurrency());
+        return accountDTO;
     }
 
 }

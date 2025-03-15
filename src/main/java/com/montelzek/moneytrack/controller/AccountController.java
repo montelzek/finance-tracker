@@ -42,14 +42,7 @@ public class AccountController {
     public AccountDTO getAccountForEdit(@PathVariable Long id) {
 
         Account account = accountService.findById(id);
-
-        AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setId(account.getId());
-        accountDTO.setName(account.getName());
-        accountDTO.setAccountType(account.getAccountType());
-        accountDTO.setBalance(account.getBalance());
-        accountDTO.setCurrency(account.getCurrency());
-        return accountDTO;
+        return accountService.convertToDTO(account);
     }
 
     @PostMapping("/save")
@@ -62,22 +55,21 @@ public class AccountController {
             return "accounts/list";
         }
 
-        Long userId = userService.getCurrentUserId();
-        Account account = accountDTO.getId() != null
-                ? accountService.findById(accountDTO.getId())
-                : new Account();
-        account.setName(accountDTO.getName());
-        account.setAccountType(accountDTO.getAccountType());
-        account.setBalance(accountDTO.getBalance());
-        account.setCurrency(accountDTO.getCurrency());
+        try {
+            accountService.saveAccount(accountDTO);
+            return "redirect:/budgets";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            result.rejectValue("", "error.general", e.getMessage());
+            prepareAccountModel(model);
+            return "accounts/list";
+        }
 
-        accountService.saveAccount(account, userId);
-        return "redirect:/accounts";
+
     }
 
     @GetMapping("/delete")
     public String deleteAccount(@RequestParam("accountId") Long id) {
-        accountService.deleteAccount(id);
+        accountService.deleteById(id);
         return "redirect:/accounts";
     }
 
