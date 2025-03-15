@@ -2,8 +2,6 @@ package com.montelzek.moneytrack.controller;
 
 import com.montelzek.moneytrack.dto.AccountDTO;
 import com.montelzek.moneytrack.model.Account;
-import com.montelzek.moneytrack.model.User;
-import com.montelzek.moneytrack.repository.UserRepository;
 import com.montelzek.moneytrack.service.AccountService;
 import com.montelzek.moneytrack.service.UserService;
 import jakarta.validation.Valid;
@@ -65,34 +63,21 @@ public class AccountController {
         }
 
         Long userId = userService.getCurrentUserId();
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
+        Account account = accountDTO.getId() != null
+                ? accountService.findById(accountDTO.getId())
+                : new Account();
+        account.setName(accountDTO.getName());
+        account.setAccountType(accountDTO.getAccountType());
+        account.setBalance(accountDTO.getBalance());
+        account.setCurrency(accountDTO.getCurrency());
 
-        Account account;
-        if (accountDTO.getId() != null) {
-            account = accountService.findById(accountDTO.getId());
-            account.setName(accountDTO.getName());
-            account.setAccountType(accountDTO.getAccountType());
-            account.setBalance(accountDTO.getBalance());
-            account.setCurrency(accountDTO.getCurrency());
-        } else {
-            account = new Account(
-                    accountDTO.getName(),
-                    accountDTO.getAccountType(),
-                    accountDTO.getBalance(),
-                    accountDTO.getCurrency()
-            );
-            account.setUser(user);
-        }
-
-
-        accountService.save(account);
+        accountService.saveAccount(account, userId);
         return "redirect:/accounts";
     }
 
     @GetMapping("/delete")
     public String deleteAccount(@RequestParam("accountId") Long id) {
-        accountService.deleteById(id);
+        accountService.deleteAccount(id);
         return "redirect:/accounts";
     }
 
