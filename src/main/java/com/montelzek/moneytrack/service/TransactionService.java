@@ -26,19 +26,21 @@ public class TransactionService {
     private final AccountService accountService;
     private final CategoryService categoryService;
     private final FinancialGoalService financialGoalService;
+    private final UserService userService;
 
     public TransactionService(TransactionRepository transactionRepository,
                               BudgetService budgetService,
                               ExchangeRateService exchangeRateService,
                               AccountService accountService,
                               CategoryService categoryService,
-                              FinancialGoalService financialGoalService) {
+                              FinancialGoalService financialGoalService, UserService userService) {
         this.transactionRepository = transactionRepository;
         this.budgetService = budgetService;
         this.exchangeRateService = exchangeRateService;
         this.accountService = accountService;
         this.categoryService = categoryService;
         this.financialGoalService = financialGoalService;
+        this.userService = userService;
     }
 
     public Page<Transaction> findAccountsTransactions(Long id, Pageable pageable) {
@@ -62,13 +64,14 @@ public class TransactionService {
 
     @Transactional
     public void deleteById(Long id) {
+        Long userId = userService.getCurrentUserId();
         Transaction transaction = findById(id);
         Account account = transaction.getAccount();
         revertBalanceEffect(transaction, account);
         revertBudgetEffect(transaction);
         transactionRepository.deleteById(id);
 
-        accountService.save(account);
+        accountService.saveAccount(account, userId);
     }
 
     @Transactional
@@ -158,11 +161,11 @@ public class TransactionService {
             }
         }
 
-        accountService.save(account);
+        accountService.saveAccount(account, userService.getCurrentUserId());
 
         // If old account is different from new account and exists, save it too
         if (oldAccount != null && !oldAccount.getId().equals(account.getId())) {
-            accountService.save(oldAccount);
+            accountService.saveAccount(oldAccount, userService.getCurrentUserId());
         }
     }
 
