@@ -44,15 +44,7 @@ public class BudgetController {
     public BudgetDTO getBudgetForEdit(@PathVariable Long id) {
 
         Budget budget = budgetService.findById(id);
-
-        BudgetDTO budgetDTO = new BudgetDTO();
-        budgetDTO.setId(budget.getId());
-        budgetDTO.setName(budget.getName());
-        budgetDTO.setStartDate(budget.getStartDate());
-        budgetDTO.setEndDate(budget.getEndDate());
-        budgetDTO.setBudgetSize(budget.getBudgetSize());
-        budgetDTO.setCategoryId(budget.getCategory().getId());
-        return budgetDTO;
+        return budgetService.convertToDTO(budget);
     }
 
     @PostMapping("/save")
@@ -65,33 +57,14 @@ public class BudgetController {
             return "budgets/list";
         }
 
-        Long userId = userService.getCurrentUserId();
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-        Category category = categoryService.findById(budgetDTO.getCategoryId());
-
-        Budget budget;
-        if (budgetDTO.getId() != null) {
-            budget = budgetService.findById(budgetDTO.getId());
-            budget.setName(budgetDTO.getName());
-            budget.setStartDate(budgetDTO.getStartDate());
-            budget.setEndDate(budgetDTO.getEndDate());
-            budget.setBudgetSize(budgetDTO.getBudgetSize());
-            budget.setCategory(category);
-        } else {
-            budget = new Budget(
-                    budgetDTO.getName(),
-                    budgetDTO.getStartDate(),
-                    budgetDTO.getEndDate(),
-                    budgetDTO.getBudgetSize()
-            );
-            budget.setUser(user);
-            budget.setCategory(category);
-            budget.setBudgetSpent(BigDecimal.ZERO);
+        try {
+            budgetService.saveBudget(budgetDTO);
+            return "redirect:/budgets";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            result.rejectValue("", "error.general", e.getMessage());
+            prepareBudgetModel(model);
+            return "budgets/list";
         }
-        budgetService.save(budget);
-
-        return "redirect:/budgets";
     }
 
     @GetMapping("/delete")
