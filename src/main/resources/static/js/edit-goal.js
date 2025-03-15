@@ -12,7 +12,6 @@ document.querySelectorAll('.edit-btn').forEach(button => {
                 document.getElementById('financialGoalId').value = data.id;
                 document.getElementById('nameEdit').value = data.name;
                 document.getElementById('targetAmountEdit').value = data.targetAmount;
-                document.getElementById('currentAmountEdit').value = data.currentAmount;
                 editModal.show();
             })
             .catch(error => console.error('Error:', error));
