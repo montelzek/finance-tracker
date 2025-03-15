@@ -124,7 +124,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form th:action="@{/financialGoals/create}" th:object="${financialGoal}" method="post">
+                <form th:action="@{/financialGoals/save}" th:object="${financialGoal}" method="post">
                     <div class="mb-3">
                         <label class="form-label" for="name">Name: </label>
                         <input type="text" id="name" class="form-control" th:field="*{name}" required maxlength="255">
@@ -157,7 +157,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form th:action="@{/financialGoals/update}" th:object="${financialGoal}" method="post">
+                <form th:action="@{/financialGoals/save}" th:object="${financialGoal}" method="post">
                     <input type="hidden" th:field="*{id}" id="financialGoalId">
                     <div class="mb-3">
                         <label class="form-label" for="nameEdit">Name: </label>
