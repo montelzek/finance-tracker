@@ -15,7 +15,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -27,19 +26,22 @@ public class TransactionController {
     private final UserService userService;
     private final AccountService accountService;
     private final FinancialGoalService financialGoalService;
-    private final ExchangeRateService exchangeRateService;
 
-    public TransactionController(CategoryService categoryService, TransactionService transactionService, UserService userService, AccountService accountService, FinancialGoalService financialGoalService, ExchangeRateService exchangeRateService) {
+    public TransactionController(CategoryService categoryService,
+                                 TransactionService transactionService,
+                                 UserService userService,
+                                 AccountService accountService,
+                                 FinancialGoalService financialGoalService) {
         this.categoryService = categoryService;
         this.transactionService = transactionService;
         this.userService = userService;
         this.accountService = accountService;
         this.financialGoalService = financialGoalService;
-        this.exchangeRateService = exchangeRateService;
     }
 
     @GetMapping
-    public String listTransactions(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size,
+    public String listTransactions(@RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size,
                                    Model model) {
 
         Long id = userService.getCurrentUserId();
@@ -63,152 +65,28 @@ public class TransactionController {
             return "transactions/list";
         }
 
-        Account account = accountService.findById(transactionDTO.getAccountId());
-        Category category = categoryService.findById(transactionDTO.getCategoryId());
-
-        if (transactionDTO.getId() != null) {
-            Transaction existingTransaction = transactionService.findById(transactionDTO.getId());
-            Account existingAccount = existingTransaction.getAccount();
-
-            // Revert transaction affect
-
-            switch (existingTransaction.getCategory().getType()) {
-                case "INCOME" ->
-                        existingAccount.setBalance(existingAccount.getBalance().subtract(existingTransaction.getAmount()));
-                case "EXPENSE" ->
-                        existingAccount.setBalance(existingAccount.getBalance().add(existingTransaction.getAmount()));
-                case "FINANCIAL_GOAL" -> {
-                    Long financialGoalId = (transactionDTO.getFinancialGoalId() != null)
-                            ? transactionDTO.getFinancialGoalId()
-                            : (existingTransaction.getFinancialGoal() != null ? existingTransaction.getFinancialGoal().getId() : null);
-                    if (financialGoalId != null) {
-                        FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
-                        String currency = existingAccount.getCurrency().toString();
-                        BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, existingTransaction.getAmount());
-                        financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().subtract(amountInUSD));
-                        financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
-                        financialGoalService.save(financialGoal);
-                    }
-                    existingAccount.setBalance(existingAccount.getBalance().add(existingTransaction.getAmount()));
-                }
+        try {
+            if (transactionDTO.getId() != null) {
+                transactionService.updateTransaction(transactionDTO);
+            } else {
+                transactionService.createTransaction(transactionDTO);
             }
-
-            // If account not changing then save account
-
-            if (!existingAccount.getId().equals(account.getId())) {
-                accountService.save(existingAccount);
+            return "redirect:/transactions";
+        } catch (IllegalArgumentException e) {
+            if (e.getMessage().contains("Financial Goal ID")) {
+                result.rejectValue("financialGoalId", "error.goal", e.getMessage());
+            } else if (e.getMessage().contains("already achieved goal")) {
+                result.rejectValue("financialGoalId", "error.goal", e.getMessage());
+            } else {
+                result.rejectValue("", "error.general", e.getMessage());
             }
-
-            // Update Transaction
-
-            existingTransaction.setAccount(account);
-            existingTransaction.setDate(transactionDTO.getDate());
-            existingTransaction.setAmount(transactionDTO.getAmount());
-            existingTransaction.setCategory(category);
-            existingTransaction.setDescription(transactionDTO.getDescription());
-            existingTransaction.setFinancialGoal(category.getType().equals("FINANCIAL_GOAL") && transactionDTO.getFinancialGoalId() != null
-                    ? financialGoalService.findById(transactionDTO.getFinancialGoalId())
-                    : null);
-
-            // Add new transaction effect
-
-            switch (category.getType()) {
-                case "INCOME" -> account.setBalance(account.getBalance().add(existingTransaction.getAmount()));
-                case "EXPENSE" -> account.setBalance(account.getBalance().subtract(existingTransaction.getAmount()));
-                case "FINANCIAL_GOAL" -> {
-                    Long financialGoalId = transactionDTO.getFinancialGoalId();
-                    if (financialGoalId == null) {
-                        result.rejectValue("financialGoalId", "error.goal", "Financial Goal ID is required for this transaction type!");
-                        prepareTransactionModel(model);
-                        return "transactions/list";
-                    }
-                    FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
-                    if (financialGoal.getIsAchieved()) {
-                        result.rejectValue("financialGoalId", "error.goal", "Can't add transaction to already achieved goal!");
-                        prepareTransactionModel(model);
-                        return "transactions/list";
-                    }
-                    String currency = account.getCurrency().toString();
-                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, existingTransaction.getAmount());
-                    financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().add(amountInUSD));
-                    financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
-                    financialGoalService.save(financialGoal);
-                    account.setBalance(account.getBalance().subtract(existingTransaction.getAmount()));
-                }
-            }
-
-            transactionService.save(existingTransaction);
-            accountService.save(account);
-
-        } else {
-
-            Transaction transaction = new Transaction(
-                    transactionDTO.getAmount(),
-                    transactionDTO.getDate(),
-                    transactionDTO.getDescription()
-            );
-            transaction.setAccount(account);
-            transaction.setCategory(category);
-
-            switch (category.getType()) {
-                case "INCOME" -> account.setBalance(account.getBalance().add(transaction.getAmount()));
-                case "EXPENSE" -> account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-                case "FINANCIAL_GOAL" -> {
-                    Long financialGoalId = transactionDTO.getFinancialGoalId();
-                    if (financialGoalId == null) {
-                        result.rejectValue("financialGoalId", "error.goal", "Financial Goal ID is required for this transaction type!");
-                        prepareTransactionModel(model);
-                        return "transactions/list";
-                    }
-                    FinancialGoal financialGoal = financialGoalService.findById(financialGoalId);
-                    if (financialGoal.getIsAchieved()) {
-                        result.rejectValue("financialGoalId", "error.goal", "Can't add transaction to already achieved goal!");
-                        prepareTransactionModel(model);
-                        return "transactions/list";
-                    }
-                    transaction.setFinancialGoal(financialGoal);
-                    String currency = account.getCurrency().toString();
-                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
-                    financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().add(amountInUSD));
-                    financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
-                    financialGoalService.save(financialGoal);
-                    account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-                }
-            }
-
-            transactionService.save(transaction);
-            accountService.save(account);
+            prepareTransactionModel(model);
+            return "transactions/list";
         }
-
-        return "redirect:/transactions";
     }
 
     @GetMapping("/delete")
-    public String deleteAccount(@RequestParam("transactionId") Long id) {
-
-        Transaction transaction = transactionService.findById(id);
-        Account account = transaction.getAccount();
-
-        // Reversing balance
-
-        switch (transaction.getCategory().getType()) {
-            case "INCOME" -> account.setBalance(account.getBalance().subtract(transaction.getAmount()));
-            case "EXPENSE" -> account.setBalance(account.getBalance().add(transaction.getAmount()));
-            case "FINANCIAL_GOAL" -> {
-                account.setBalance(account.getBalance().add(transaction.getAmount()));
-                FinancialGoal financialGoal = transaction.getFinancialGoal();
-                if (financialGoal != null) {
-                    String currency = account.getCurrency().toString();
-                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
-                    financialGoal.setCurrentAmount(financialGoal.getCurrentAmount().subtract(amountInUSD));
-                    financialGoal.setIsAchieved(financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0);
-                    financialGoalService.save(financialGoal);
-                }
-            }
-        }
-
-        accountService.save(account);
-
+    public String deleteTransaction(@RequestParam("transactionId") Long id) {
         transactionService.deleteById(id);
         return "redirect:/transactions";
     }
@@ -218,26 +96,20 @@ public class TransactionController {
     public TransactionDTO getTransactionForEdit(@PathVariable Long id) {
 
         Transaction transaction = transactionService.findById(id);
-
-        TransactionDTO transactionDTO = new TransactionDTO();
-        transactionDTO.setId(transaction.getId());
-        transactionDTO.setAmount(transaction.getAmount());
-        transactionDTO.setDate(transaction.getDate());
-        transactionDTO.setDescription(transaction.getDescription());
-        transactionDTO.setAccountId(transaction.getAccount().getId());
-        transactionDTO.setCategoryId(transaction.getCategory().getId());
-        transactionDTO.setCategoryType(transaction.getCategory().getType());
-        return transactionDTO;
+        return transactionService.convertToDTO(transaction);
     }
 
     private void prepareTransactionModel(Model model) {
+
         Long id = userService.getCurrentUserId();
+
         List<Category> categories = categoryService.findAll();
         List<Category> incomeCategories = categoryService.findByType("INCOME");
         List<Category> expenseCategories = categoryService.findByType("EXPENSE");
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
+
         model.addAttribute("categories", categories);
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
