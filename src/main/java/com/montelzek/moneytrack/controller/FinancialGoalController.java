@@ -2,7 +2,6 @@ package com.montelzek.moneytrack.controller;
 
 import com.montelzek.moneytrack.dto.FinancialGoalDTO;
 import com.montelzek.moneytrack.model.FinancialGoal;
-import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.service.FinancialGoalService;
 import com.montelzek.moneytrack.service.UserService;
 import jakarta.validation.Valid;
@@ -11,7 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Controller
@@ -30,63 +28,29 @@ public class FinancialGoalController {
     public String listFinancialGoal(Model model) {
 
         FinancialGoalDTO financialGoalDTO = new FinancialGoalDTO();
-
         model.addAttribute("financialGoal", financialGoalDTO);
-
         prepareFinancialGoalModel(model);
         return "financialGoals/list";
     }
 
-    @PostMapping("/create")
-    public String saveFinancialGoal(@Valid @ModelAttribute("createFinancialGoal") FinancialGoalDTO financialGoalDTO,
-                             BindingResult result, Model model) {
+    @PostMapping("/save")
+    public String saveFinancialGoal(@Valid @ModelAttribute("financialGoal") FinancialGoalDTO financialGoalDTO,
+                                    BindingResult result, Model model) {
 
         if (result.hasErrors()) {
+            model.addAttribute("financialGoal", financialGoalDTO);
             prepareFinancialGoalModel(model);
             return "financialGoals/list";
         }
 
-        Long userId = userService.getCurrentUserId();
-        User user = userService.findById(userId)
-                .orElseThrow(() -> new IllegalStateException("User not found"));
-
-
-        FinancialGoal financialGoal = new FinancialGoal(
-                financialGoalDTO.getName(),
-                financialGoalDTO.getTargetAmount()
-        );
-        financialGoal.setUser(user);
-        financialGoal.setCurrentAmount(BigDecimal.ZERO);
-        financialGoal.setIsAchieved(false);
-
-        financialGoalService.save(financialGoal);
-
-        return "redirect:/financialGoals";
-    }
-
-    @PostMapping("/update")
-    public String updateFinancialGoal(@Valid @ModelAttribute("editFinancialGoal") FinancialGoalDTO financialGoalDTO,
-                                      BindingResult result, Model model) {
-
-        if (result.hasErrors()) {
+        try {
+            financialGoalService.saveFinancialGoal(financialGoalDTO);
+            return "redirect:/financialGoals";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            result.rejectValue("", "error.general", e.getMessage());
             prepareFinancialGoalModel(model);
             return "financialGoals/list";
         }
-
-        FinancialGoal financialGoal = financialGoalService.findById(financialGoalDTO.getId());
-
-        financialGoal.setName(financialGoalDTO.getName());
-        financialGoal.setTargetAmount(financialGoalDTO.getTargetAmount());
-
-        if (financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) >= 0 && !financialGoal.getIsAchieved()) {
-            financialGoal.setIsAchieved(true);
-        } else if (financialGoal.getCurrentAmount().compareTo(financialGoal.getTargetAmount()) < 0 && financialGoal.getIsAchieved()) {
-            financialGoal.setIsAchieved(false);
-        }
-
-        financialGoalService.save(financialGoal);
-
-        return "redirect:/financialGoals";
     }
 
     @GetMapping("/edit/{id}")
@@ -94,12 +58,7 @@ public class FinancialGoalController {
     public FinancialGoalDTO getFinancialGoalForEdit(@PathVariable Long id) {
 
         FinancialGoal financialGoal = financialGoalService.findById(id);
-
-        FinancialGoalDTO financialGoalDTO = new FinancialGoalDTO();
-        financialGoalDTO.setId(financialGoal.getId());
-        financialGoalDTO.setName(financialGoal.getName());
-        financialGoalDTO.setTargetAmount(financialGoal.getTargetAmount());
-        return financialGoalDTO;
+        return financialGoalService.convertToDTO(financialGoal);
     }
 
     @GetMapping("/delete")
