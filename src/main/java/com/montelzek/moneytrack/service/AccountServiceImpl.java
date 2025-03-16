@@ -11,35 +11,40 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class AccountService {
+public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final ExchangeRateService exchangeRateService;
     private final UserService userService;
 
-    public AccountService(AccountRepository accountRepository, ExchangeRateService exchangeRateService, UserService userService) {
+    public AccountServiceImpl(AccountRepository accountRepository, ExchangeRateService exchangeRateService, UserService userService) {
         this.accountRepository = accountRepository;
         this.exchangeRateService = exchangeRateService;
         this.userService = userService;
     }
 
+    @Override
     public List<Account> findUsersAccounts(Long id) {
         return accountRepository.findByUserIdOrderByCreatedAt(id);
     }
 
+    @Override
     public Account save(Account account) {
         return accountRepository.save(account);
     }
 
+    @Override
     public Account findById(Long id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Did not find account of id: " + id));
     }
 
+    @Override
     public void deleteById(Long id) {
         accountRepository.deleteById(id);
     }
 
+    @Override
     @Transactional
     public void saveAccount(AccountDTO accountDTO) {
         if (accountDTO.getId() != null) {
@@ -49,6 +54,7 @@ public class AccountService {
         }
     }
 
+    @Override
     @Transactional
     public void createAccount(AccountDTO accountDTO) {
         Long userId = userService.getCurrentUserId();
@@ -66,6 +72,7 @@ public class AccountService {
         save(account);
     }
 
+    @Override
     @Transactional
     public void updateAccount(AccountDTO accountDTO) {
         if (accountDTO.getId() == null) {
@@ -82,8 +89,8 @@ public class AccountService {
         save(account);
     }
 
+    @Override
     public BigDecimal getTotalBalance(Long userId) {
-
         List<Account> accounts = accountRepository.findByUserId(userId);
         BigDecimal totalBalance = BigDecimal.ZERO;
 
@@ -94,8 +101,8 @@ public class AccountService {
         return totalBalance;
     }
 
+    @Override
     public AccountDTO convertToDTO(Account account) {
-
         AccountDTO accountDTO = new AccountDTO();
         accountDTO.setId(account.getId());
         accountDTO.setName(account.getName());
@@ -104,5 +111,4 @@ public class AccountService {
         accountDTO.setCurrency(account.getCurrency());
         return accountDTO;
     }
-
 }
