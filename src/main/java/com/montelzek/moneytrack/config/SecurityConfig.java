@@ -18,6 +18,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/register", "/login",  "/css/**", "/js/**").permitAll()
                         .requestMatchers("/dashboard").authenticated()
+                        .requestMatchers("/reports/**").hasRole("PREMIUM")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -28,7 +29,9 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .permitAll()
                         .logoutSuccessUrl("/login?logout")
-                );
+                )
+                .exceptionHandling(configurer ->
+                        configurer.accessDeniedPage("/access-denied"));
 
         return http.build();
     }
