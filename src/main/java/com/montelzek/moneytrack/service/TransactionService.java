@@ -33,7 +33,8 @@ public class TransactionService {
                               ExchangeRateService exchangeRateService,
                               AccountService accountService,
                               CategoryService categoryService,
-                              FinancialGoalService financialGoalService, UserService userService) {
+                              FinancialGoalService financialGoalService,
+                              UserService userService) {
         this.transactionRepository = transactionRepository;
         this.budgetService = budgetService;
         this.exchangeRateService = exchangeRateService;
@@ -46,6 +47,13 @@ public class TransactionService {
     public Page<Transaction> findAccountsTransactions(Long id, Pageable pageable) {
         return transactionRepository.findByAccount_User_Id_OrderByDateDescCreatedAtDesc(id, pageable);
     }
+
+//    public Page<Transaction> findPage(Long id, int pageNo, int pageSize, String sortBy) {
+//
+//        Sort sort = Sort.by(Sort.Direction.DESC, sortBy);
+//        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+//        return transactionRepository.findByAccount_User_Id(id, pageable);
+//    }
 
     public List<Transaction> getRecentTransactions(Long id) {
         return transactionRepository.findTop6ByAccount_User_Id_OrderByDateDesc(id);
@@ -71,7 +79,7 @@ public class TransactionService {
         revertBudgetEffect(transaction);
         transactionRepository.deleteById(id);
 
-        accountService.saveAccount(account, userId);
+        accountService.save(account);
     }
 
     @Transactional
@@ -161,11 +169,11 @@ public class TransactionService {
             }
         }
 
-        accountService.saveAccount(account, userService.getCurrentUserId());
+        accountService.save(account);
 
         // If old account is different from new account and exists, save it too
         if (oldAccount != null && !oldAccount.getId().equals(account.getId())) {
-            accountService.saveAccount(oldAccount, userService.getCurrentUserId());
+            accountService.save(oldAccount);
         }
     }
 

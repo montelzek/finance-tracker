@@ -3,7 +3,6 @@ package com.montelzek.moneytrack.controller;
 import com.montelzek.moneytrack.dto.BudgetDTO;
 import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Category;
-import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.service.BudgetService;
 import com.montelzek.moneytrack.service.CategoryService;
 import com.montelzek.moneytrack.service.UserService;
@@ -13,7 +12,6 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Controller

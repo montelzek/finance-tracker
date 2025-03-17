@@ -15,11 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 public class AuthController {
@@ -34,7 +31,15 @@ public class AuthController {
     private final BudgetService budgetService;
     private final FinancialGoalService financialGoalService;
 
-    public AuthController(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder, UserService userService, AccountService accountService, TransactionService transactionService, ExchangeRateService exchangeRateService, BudgetService budgetService, FinancialGoalService financialGoalService) {
+    public AuthController(UserRepository userRepository,
+                          RoleRepository roleRepository,
+                          PasswordEncoder passwordEncoder,
+                          UserService userService,
+                          AccountService accountService,
+                          TransactionService transactionService,
+                          ExchangeRateService exchangeRateService,
+                          BudgetService budgetService,
+                          FinancialGoalService financialGoalService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
