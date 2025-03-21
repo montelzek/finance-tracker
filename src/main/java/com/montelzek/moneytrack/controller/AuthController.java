@@ -110,4 +110,9 @@ public class AuthController {
 
         return "dashboard";
     }
+
+    @GetMapping("/access-denied")
+    public String showAccessDenied() {
+        return "access-denied";
+    }
 }
