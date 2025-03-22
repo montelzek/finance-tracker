@@ -1,8 +1,8 @@
 package com.montelzek.moneytrack.controller;
 
+import com.montelzek.moneytrack.dto.TransactionDTO;
 import com.montelzek.moneytrack.dto.UserRegisterDTO;
-import com.montelzek.moneytrack.model.Role;
-import com.montelzek.moneytrack.model.User;
+import com.montelzek.moneytrack.model.*;
 import com.montelzek.moneytrack.repository.RoleRepository;
 import com.montelzek.moneytrack.repository.UserRepository;
 import com.montelzek.moneytrack.service.*;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 
 @Controller
 public class AuthController {
@@ -30,6 +31,7 @@ public class AuthController {
     private final ExchangeRateService exchangeRateService;
     private final BudgetService budgetService;
     private final FinancialGoalService financialGoalService;
+    private final CategoryService categoryService;
 
     public AuthController(UserRepository userRepository,
                           RoleRepository roleRepository,
@@ -39,7 +41,7 @@ public class AuthController {
                           TransactionService transactionService,
                           ExchangeRateService exchangeRateService,
                           BudgetService budgetService,
-                          FinancialGoalService financialGoalService) {
+                          FinancialGoalService financialGoalService, CategoryService categoryService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -49,6 +51,7 @@ public class AuthController {
         this.exchangeRateService = exchangeRateService;
         this.budgetService = budgetService;
         this.financialGoalService = financialGoalService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/login")
@@ -96,6 +99,19 @@ public class AuthController {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
         LocalDate today = LocalDate.now();
+
+        List<Category> incomeCategories = categoryService.findByType("INCOME");
+        List<Category> expenseCategories = categoryService.findByType("EXPENSE");
+        List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
+        List<Account> accounts = accountService.findUsersAccounts(userId);
+        List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(userId);
+
+        model.addAttribute("transaction", new TransactionDTO());
+        model.addAttribute("incomeCategories", incomeCategories);
+        model.addAttribute("expenseCategories", expenseCategories);
+        model.addAttribute("financialGoalCategories", financialGoalCategories);
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("financialGoals", financialGoals);
 
         model.addAttribute("user", user);
         model.addAttribute("totalBalance", accountService.getTotalBalance(userId));
