@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -58,11 +59,14 @@ public class TransactionController {
 
     @PostMapping("/save")
     public String saveTransaction(@Valid @ModelAttribute("transaction") TransactionDTO transactionDTO,
-                                  BindingResult result, Model model) {
+                                  BindingResult result,
+                                  RedirectAttributes redirectAttributes,
+                                  @RequestParam(value = "source", defaultValue = "transactions") String source) {
+
         if (result.hasErrors()) {
-            model.addAttribute("transaction", transactionDTO);
-            prepareTransactionModel(model);
-            return "transactions/list";
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.transaction", result);
+            redirectAttributes.addFlashAttribute("transaction", transactionDTO);
+            return "redirect:/" + source;
         }
 
         try {
@@ -71,17 +75,10 @@ public class TransactionController {
             } else {
                 transactionService.createTransaction(transactionDTO);
             }
-            return "redirect:/transactions";
+            return "redirect:/" + source;
         } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("Financial Goal ID")) {
-                result.rejectValue("financialGoalId", "error.goal", e.getMessage());
-            } else if (e.getMessage().contains("already achieved goal")) {
-                result.rejectValue("financialGoalId", "error.goal", e.getMessage());
-            } else {
-                result.rejectValue("", "error.general", e.getMessage());
-            }
-            prepareTransactionModel(model);
-            return "transactions/list";
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/" + source;
         }
     }
 
