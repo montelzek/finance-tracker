@@ -12,6 +12,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 
@@ -31,6 +32,7 @@ public class AccountRepositoryTests {
     private User testUser;
     private Account account1;
     private Account account2;
+    private Account account3;
 
     @BeforeEach
     void setup() {
@@ -57,6 +59,14 @@ public class AccountRepositoryTests {
                 .accountType(Account.AccountType.CHECKING)
                 .balance(BigDecimal.valueOf(32000))
                 .currency(Account.Currency.JPY)
+                .user(testUser)
+                .build();
+
+        account3 = Account.builder()
+                .name("Test Account 3")
+                .accountType(Account.AccountType.SAVINGS)
+                .balance(BigDecimal.valueOf(5000))
+                .currency(Account.Currency.EUR)
                 .user(testUser)
                 .build();
     }
@@ -94,4 +104,23 @@ public class AccountRepositoryTests {
         assertThat(accountList).isEmpty();
     }
 
+    @Test
+    void testFindByUserIdOrderByCreatedAt_shouldReturnAccountsInOrder() {
+
+        // Arrange
+        testEntityManager.persist(account2);
+        testEntityManager.persist(account1);
+        testEntityManager.persist(account3);
+        testEntityManager.flush();
+
+        // Act
+        List<Account> accountList = accountRepository.findByUserIdOrderByCreatedAt(testUser.getId());
+
+        // Assert
+        assertThat(accountList).isNotNull();
+        assertThat(accountList).hasSize(3);
+        assertThat(accountList.get(0).getName()).isEqualTo(account2.getName());
+        assertThat(accountList.get(1).getName()).isEqualTo(account1.getName());
+        assertThat(accountList.get(2).getName()).isEqualTo(account3.getName());
+    }
 }
