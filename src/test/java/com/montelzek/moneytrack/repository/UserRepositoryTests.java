@@ -64,4 +64,28 @@ public class UserRepositoryTests {
         // Assert
         assertThat(foundUser).isEmpty();
     }
+
+    @Test
+    void testExistsByEmail_whenEmailExists_thenReturnTrue() {
+        // Arrange
+        testEntityManager.persistAndFlush(testUser);
+
+        // Act
+        Boolean exists = userRepository.existsByEmail(testUser.getEmail());
+
+        // Assert
+        assertThat(exists).isTrue();
+    }
+
+    @Test
+    void testExistsByEmail_whenEmailDoesNotExist_thenReturnFalse() {
+        // Arrange
+        testEntityManager.persistAndFlush(testUser);
+
+        // Act
+        Boolean exists = userRepository.existsByEmail("nonexistent@example.com");
+
+        // Assert
+        assertThat(exists).isFalse();
+    }
 }
