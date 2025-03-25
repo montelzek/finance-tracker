@@ -119,7 +119,7 @@ public class TransactionRepositoryTests {
     }
 
     @Test
-    void findIncomeTransactionsFromPastMonth_ShouldReturnOnlyIncomeTransactionsFromLast30Days() {
+    public void testFindIncomeTransactionsFromPastMonth_ShouldReturnOnlyIncomeTransactionsFromLast30Days() {
         // Arrange
         for (int i = 0; i < 10; i++) {
             Transaction transaction = Transaction.builder()
@@ -151,7 +151,7 @@ public class TransactionRepositoryTests {
     }
 
     @Test
-    void findExpenseTransactionsFromPastMonth_ShouldReturnOnlyExpenseTransactionsFromLast30Days() {
+    public void testFindExpenseTransactionsFromPastMonth_ShouldReturnOnlyExpenseTransactionsFromLast30Days() {
         // Arrange
         for (int i = 0; i < 10; i++) {
             Transaction transaction = Transaction.builder()
@@ -180,5 +180,37 @@ public class TransactionRepositoryTests {
             assertThat(t.getCategory().getType()).isEqualTo("EXPENSE");
         }
         assertThat(foundExpenseTransactions).hasSize(5);
+    }
+
+    @Test
+    public void testFindTransactionsFromLastSixMonths_shouldReturnTransactionsFromLast6Months() {
+        // Arrange
+        for (int i = 0; i < 5; i++) {
+            Transaction transaction = Transaction.builder()
+                    .amount(BigDecimal.valueOf(100 + i))
+                    .date(LocalDate.now().minusDays(i))
+                    .account(account)
+                    .category(i % 2 == 0 ? incomeCategory : expenseCategory)
+                    .build();
+            testEntityManager.persist(transaction);
+        }
+        Transaction transaction = Transaction.builder()
+                .amount(BigDecimal.valueOf(500))
+                .date(LocalDate.now().minusMonths(7))
+                .account(account)
+                .category(expenseCategory)
+                .build();
+        testEntityManager.persist(transaction);
+        testEntityManager.flush();
+
+        // Act
+        List<Transaction> transactionList = transactionRepository
+                .findTransactionsFromLastSixMonths(user.getId(), LocalDate.now().minusMonths(6));
+
+        // Assert
+        assertThat(transactionList).hasSize(5);
+        for (Transaction t : transactionList) {
+            assertThat(t.getDate()).isAfter(LocalDate.now().minusMonths(6).minusDays(1));
+        }
     }
 }
