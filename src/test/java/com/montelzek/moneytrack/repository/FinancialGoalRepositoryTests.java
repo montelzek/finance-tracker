@@ -30,6 +30,7 @@ public class FinancialGoalRepositoryTests {
     private TestEntityManager testEntityManager;
 
     private User user1;
+    private User user2;
 
     @BeforeEach
     void setup() {
@@ -42,7 +43,7 @@ public class FinancialGoalRepositoryTests {
                 .build();
         testEntityManager.persistAndFlush(user1);
 
-        User user2 = User.builder()
+        user2 = User.builder()
                 .email("user2@gmail.com")
                 .password("password")
                 .firstName("John")
@@ -121,6 +122,39 @@ public class FinancialGoalRepositoryTests {
     void testFindByUserId_OrderByCreatedAt_whenUserIdIsNotValid_shouldReturnEmptyList() {
         // Act
         List<FinancialGoal> financialGoalList = financialGoalRepository.findByUserId_OrderByCreatedAt(999L);
+
+        // Assert
+        assertThat(financialGoalList).isEmpty();
+    }
+
+    @Test
+    void testFindTop3ByUserId_shouldReturnTop3MatchingFinancialGoals() {
+        // Act
+        List<FinancialGoal> financialGoalList = financialGoalRepository.findTop3ByUserId(user1.getId());
+
+        // Assert
+        assertThat(financialGoalList).hasSize(3);
+        for (FinancialGoal financialGoal : financialGoalList) {
+            assertThat(financialGoal.getUser().getId()).isEqualTo(user1.getId());
+        }
+    }
+
+    @Test
+    void testFindTop3ByUserId_shouldReturnAllMatchingFinancialGoalsIfLessThan3() {
+        // Act
+        List<FinancialGoal> financialGoalList = financialGoalRepository.findTop3ByUserId(user2.getId());
+
+        // Assert
+        assertThat(financialGoalList).hasSize(1);
+        for (FinancialGoal financialGoal : financialGoalList) {
+            assertThat(financialGoal.getUser().getId()).isEqualTo(user2.getId());
+        }
+    }
+
+    @Test
+    void testFindTop3ByUserId_shouldReturnEmptyList() {
+        // Act
+        List<FinancialGoal> financialGoalList = financialGoalRepository.findTop3ByUserId(999L);
 
         // Assert
         assertThat(financialGoalList).isEmpty();
