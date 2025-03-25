@@ -19,6 +19,7 @@ import java.util.Set;
 @NoArgsConstructor
 @EqualsAndHashCode
 @AllArgsConstructor
+@Builder
 public class User {
 
     @Id
