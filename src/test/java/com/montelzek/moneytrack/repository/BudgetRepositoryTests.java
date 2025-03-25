@@ -235,4 +235,46 @@ public class BudgetRepositoryTests {
     }
 
 
+    @Test
+    void testFindTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual_shouldReturnTop4MatchingBudgets() {
+        // Arrange
+        testEntityManager.persist(budget1);
+        testEntityManager.persist(budget2);
+        testEntityManager.persist(budget4);
+        testEntityManager.persist(budget5);
+        testEntityManager.persist(budget7);
+        testEntityManager.flush();
+        LocalDate now = LocalDate.now();
+        LocalDate endQuery = now.plusDays(7);
+
+        // Act
+        List<Budget> result = budgetRepository.findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user1.getId(), now, endQuery);
+
+        // Assert
+        assertThat(result).hasSize(4);
+        for (Budget b : result) {
+            assertThat(b.getUser().getId()).isEqualTo(user1.getId());
+            assertThat(b.getStartDate()).isBeforeOrEqualTo(now);
+            assertThat(b.getEndDate()).isAfterOrEqualTo(endQuery);
+        }
+    }
+
+    @Test
+    void testFindTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual_noMatch() {
+        // Arrange
+        testEntityManager.persist(budget1);
+        testEntityManager.persist(budget2);
+        testEntityManager.persist(budget4);
+        LocalDate startQuery = LocalDate.now().plusDays(100);
+        LocalDate endQuery = LocalDate.now().plusDays(110);
+
+        // Act
+        List<Budget> result = budgetRepository.findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user1.getId(), startQuery, endQuery);
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
+
 }
