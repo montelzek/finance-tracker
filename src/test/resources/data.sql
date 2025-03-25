@@ -1,6 +1,11 @@
-INSERT INTO roles (name) VALUES ('ROLE_USER');
-INSERT INTO roles (name) VALUES ('ROLE_PREMIUM');
-INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
+INSERT INTO roles (name)
+SELECT 'ROLE_USER' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'ROLE_USER');
+
+INSERT INTO roles (name)
+SELECT 'ROLE_ADMIN' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'ROLE_ADMIN');
+
+INSERT INTO roles (name)
+SELECT 'ROLE_PREMIUM' WHERE NOT EXISTS (SELECT 1 FROM roles WHERE name = 'ROLE_PREMIUM');
 
 INSERT INTO categories (name, type) VALUES ('Salary', 'INCOME');
 INSERT INTO categories (name, type) VALUES ('Freelance Work', 'INCOME');
