@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class CategoryRepositoryTests {
+public class CategoryRepositoryTest {
 
     @Autowired
     private CategoryRepository categoryRepository;

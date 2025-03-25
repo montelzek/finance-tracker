@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 @Sql("/data.sql")
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class RoleRepositoryTests {
+public class RoleRepositoryTest {
 
     @Autowired
     private RoleRepository roleRepository;

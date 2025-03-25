@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
-public class FinancialGoalRepositoryTests {
+public class FinancialGoalRepositoryTest {
 
     @Autowired
     private FinancialGoalRepository financialGoalRepository;
