@@ -117,4 +117,68 @@ public class TransactionRepositoryTests {
         assertThat(recentTransactions).hasSize(6);
         assertThat(recentTransactions.getFirst().getDate()).isEqualTo(LocalDate.now());
     }
+
+    @Test
+    void findIncomeTransactionsFromPastMonth_ShouldReturnOnlyIncomeTransactionsFromLast30Days() {
+        // Arrange
+        for (int i = 0; i < 10; i++) {
+            Transaction transaction = Transaction.builder()
+                    .amount(BigDecimal.valueOf(100 + i))
+                    .date(LocalDate.now().minusDays(i))
+                    .account(account)
+                    .category(i % 2 == 0 ? incomeCategory : expenseCategory)
+                    .build();
+            testEntityManager.persist(transaction);
+        }
+        Transaction transaction = Transaction.builder()
+                .amount(BigDecimal.valueOf(500))
+                .date(LocalDate.now().minusDays(31))
+                .account(account)
+                .category(incomeCategory)
+                .build();
+        testEntityManager.persist(transaction);
+        testEntityManager.flush();
+
+        // Act
+        List<Transaction> foundIncomeTransactions = transactionRepository
+                .findIncomeTransactionsFromPastMonth(user.getId());
+
+        // Assert
+        for (Transaction t : foundIncomeTransactions) {
+            assertThat(t.getCategory().getType()).isEqualTo("INCOME");
+        }
+        assertThat(foundIncomeTransactions).hasSize(5);
+    }
+
+    @Test
+    void findExpenseTransactionsFromPastMonth_ShouldReturnOnlyExpenseTransactionsFromLast30Days() {
+        // Arrange
+        for (int i = 0; i < 10; i++) {
+            Transaction transaction = Transaction.builder()
+                    .amount(BigDecimal.valueOf(100 + i))
+                    .date(LocalDate.now().minusDays(i))
+                    .account(account)
+                    .category(i % 2 == 0 ? incomeCategory : expenseCategory)
+                    .build();
+            testEntityManager.persist(transaction);
+        }
+        Transaction transaction = Transaction.builder()
+                .amount(BigDecimal.valueOf(500))
+                .date(LocalDate.now().minusDays(31))
+                .account(account)
+                .category(expenseCategory)
+                .build();
+        testEntityManager.persist(transaction);
+        testEntityManager.flush();
+
+        // Act
+        List<Transaction> foundExpenseTransactions = transactionRepository
+                .findExpenseTransactionsFromPastMonth(user.getId());
+
+        // Assert
+        for (Transaction t : foundExpenseTransactions) {
+            assertThat(t.getCategory().getType()).isEqualTo("EXPENSE");
+        }
+        assertThat(foundExpenseTransactions).hasSize(5);
+    }
 }
