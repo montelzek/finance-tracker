@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -70,7 +71,7 @@ public class TransactionRepositoryTests {
     }
 
     @Test
-    void testFindByAccount_User_Id_ShouldReturnPagedTransactions() {
+    public void testFindByAccount_User_Id_ShouldReturnPagedTransactions() {
         // Arrange
         for (int i = 0; i < 10; i++) {
             Transaction transaction = Transaction.builder()
@@ -92,5 +93,28 @@ public class TransactionRepositoryTests {
         assertThat(transactionPage).isNotNull();
         assertThat(transactionPage.getContent()).hasSize(5);
         assertThat(transactionPage.getContent().getFirst().getDate()).isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    public void testFindTop6ByAccount_User_Id_ShouldReturnSixMostRecentTransactions() {
+        // Arrange
+        for (int i = 0; i < 7; i++) {
+            Transaction transaction = Transaction.builder()
+                    .amount(BigDecimal.valueOf(100 + i))
+                    .date(LocalDate.now().minusDays(i))
+                    .account(account)
+                    .category(i % 2 == 0 ? incomeCategory : expenseCategory)
+                    .build();
+            testEntityManager.persist(transaction);
+        }
+        testEntityManager.flush();
+
+        // Act
+        List<Transaction> recentTransactions = transactionRepository
+                .findTop6ByAccount_User_Id_OrderByDateDesc(user.getId());
+
+        // Assert
+        assertThat(recentTransactions).hasSize(6);
+        assertThat(recentTransactions.getFirst().getDate()).isEqualTo(LocalDate.now());
     }
 }
