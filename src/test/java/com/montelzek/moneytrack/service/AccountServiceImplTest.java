@@ -219,4 +219,33 @@ public class AccountServiceImplTest {
                 .isThrownBy(() -> accountService.createAccount(accountDTO))
                 .withMessage("User not found");
     }
+
+    @Test
+    public void updateAccount_shouldUpdateExistingAccount() {
+        // Arrange
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.save(account)).thenReturn(account);
+
+        accountDTO.setName("Updated Account Name");
+
+        // Act
+        accountService.updateAccount(accountDTO);
+
+        // Assert
+        assertThat(account.getName()).isEqualTo("Updated Account Name");
+        verify(accountRepository).save(account);
+    }
+
+    @Test
+    public void updateAccount_idIsNull_shouldThrowException() {
+        // Arrange
+        accountDTO.setId(null);
+
+        // Act & Assert
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> accountService.updateAccount(accountDTO))
+                .withMessage("Account ID can't be null");
+    }
+
+
 }
