@@ -100,14 +100,12 @@ public class TransactionController {
 
         Long id = userService.getCurrentUserId();
 
-        List<Category> categories = categoryService.findAll();
         List<Category> incomeCategories = categoryService.findByType("INCOME");
         List<Category> expenseCategories = categoryService.findByType("EXPENSE");
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
 
-        model.addAttribute("categories", categories);
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
         model.addAttribute("accounts", accounts);
