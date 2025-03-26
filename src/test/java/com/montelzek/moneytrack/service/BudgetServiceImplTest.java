@@ -1,8 +1,6 @@
 package com.montelzek.moneytrack.service;
 
-import com.montelzek.moneytrack.dto.AccountDTO;
 import com.montelzek.moneytrack.dto.BudgetDTO;
-import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Category;
 import com.montelzek.moneytrack.model.User;
@@ -67,7 +65,7 @@ public class BudgetServiceImplTest {
                 .build();
 
         budgetDTO = BudgetDTO.builder()
-                .id(null)
+                .id(1L)
                 .name("Test Budget DTO")
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(20))
@@ -325,7 +323,7 @@ public class BudgetServiceImplTest {
         when(budgetRepository.save(any(Budget.class))).thenReturn(budget);
 
         // Act
-        budgetService.saveBudget(budgetDTO);
+        budgetService.createBudget(budgetDTO);
 
         // Assert
         verify(userService).getCurrentUserId();
@@ -344,5 +342,46 @@ public class BudgetServiceImplTest {
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> budgetService.createBudget(budgetDTO))
                 .withMessage("User not found");
+    }
+
+    @Test
+    public void updateBudget_shouldUpdateExistingBudget() {
+        // Arrange
+        when(budgetRepository.findById(1L)).thenReturn(Optional.of(budget));
+        when(budgetRepository.save(budget)).thenReturn(budget);
+        budgetDTO.setName("Updated Budget Name");
+
+        // Act
+        budgetService.updateBudget(budgetDTO);
+
+        // Assert
+        assertThat(budget.getName()).isEqualTo("Updated Budget Name");
+        verify(budgetRepository).findById(1L);
+        verify(budgetRepository).save(budget);
+    }
+
+    @Test
+    public void updateBudget_idIsNull_ShouldThrowException() {
+        // Arrange
+        budgetDTO.setId(null);
+
+        // Act & Assert
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> budgetService.updateBudget(budgetDTO))
+                .withMessage("Budget ID can't be null");
+    }
+
+    @Test
+    public void convertToDTO_shouldConvertBudgetToDTO() {
+        // Act
+        BudgetDTO convertedDTO = budgetService.convertToDTO(budget);
+
+        // Asserts
+        assertThat(convertedDTO.getId()).isEqualTo(budget.getId());
+        assertThat(convertedDTO.getName()).isEqualTo(budget.getName());
+        assertThat(convertedDTO.getStartDate()).isEqualTo(budget.getStartDate());
+        assertThat(convertedDTO.getEndDate()).isEqualTo(budget.getEndDate());
+        assertThat(convertedDTO.getBudgetSize()).isEqualTo(budget.getBudgetSize());
+        assertThat(convertedDTO.getCategoryId()).isEqualTo(budget.getCategory().getId());
     }
 }
