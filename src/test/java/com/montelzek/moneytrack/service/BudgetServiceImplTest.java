@@ -155,4 +155,55 @@ public class BudgetServiceImplTest {
         //Assert
         verify(budgetRepository).deleteById(testId);
     }
+
+    @Test
+    public void findBudgetsByCategoryAndDate_shouldReturnListOfMatchingBudgets() {
+        // Arrange
+        Budget budget1 = Budget.builder()
+                .user(user)
+                .category(category)
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(5))
+                .build();
+        Budget budget2 = Budget.builder()
+                .user(user)
+                .category(category)
+                .startDate(LocalDate.now().minusDays(15))
+                .endDate(LocalDate.now().plusDays(5))
+                .build();
+        when(budgetRepository.findByUserIdAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), category, LocalDate.now().plusDays(3), LocalDate.now().plusDays(3)
+        )).thenReturn(List.of(budget1, budget2));
+
+        // Act
+        List<Budget> foundBudgets = budgetService.findBudgetsByCategoryAndDate(
+                user.getId(), category, LocalDate.now().plusDays(3));
+
+        // Assert
+        assertThat(foundBudgets).hasSize(2);
+        assertThat(foundBudgets.get(0).getCategory().getName()).isEqualTo(budget1.getCategory().getName());
+        assertThat(foundBudgets.get(1).getCategory().getName()).isEqualTo(budget1.getCategory().getName());
+        verify(budgetRepository).findByUserIdAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), category, LocalDate.now().plusDays(3), LocalDate.now().plusDays(3)
+        );
+    }
+
+    @Test
+    public void findBudgetsByCategoryAndDate_noMatchingBudgets_shouldReturnEmptyListOfBudgets() {
+        // Arrange
+        when(budgetRepository.findByUserIdAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), category, LocalDate.now().plusDays(3), LocalDate.now().plusDays(3)
+        )).thenReturn(List.of());
+
+        // Act
+        List<Budget> foundBudgets = budgetService.findBudgetsByCategoryAndDate(
+                user.getId(), category, LocalDate.now().plusDays(3));
+
+        // Assert
+        assertThat(foundBudgets).isNotNull();
+        assertThat(foundBudgets).isEmpty();
+        verify(budgetRepository).findByUserIdAndCategoryAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), category, LocalDate.now().plusDays(3), LocalDate.now().plusDays(3)
+        );
+    }
 }
