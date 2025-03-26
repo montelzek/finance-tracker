@@ -12,10 +12,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -87,5 +88,59 @@ public class AccountServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(accountRepository).findByUserIdOrderByCreatedAt(-1L);
+    }
+
+    @Test
+    public void save_validAccount_shouldSaveAccount() {
+        // Arrange
+        when(accountRepository.save(account)).thenReturn(account);
+
+        // Act
+        Account savedAccount = accountService.save(account);
+
+        // Assert
+        assertThat(savedAccount).isEqualTo(account);
+        verify(accountRepository).save(account);
+    }
+
+    @Test
+    public void findById_existingId_shouldReturnAccount() {
+        // Arrange
+        Long accountId = account.getId();
+        when(accountRepository.findById(accountId)).thenReturn(Optional.of(account));
+
+        // Act
+        Account foundAccount = accountService.findById(accountId);
+
+        // Assert
+        assertThat(foundAccount).isNotNull();
+        assertThat(foundAccount.getName()).isEqualTo(account.getName());
+        assertThat(foundAccount.getAccountType()).isEqualTo(account.getAccountType());
+        assertThat(foundAccount.getCurrency()).isEqualTo(account.getCurrency());
+        assertThat(foundAccount.getBalance()).isEqualTo(account.getBalance());
+        verify(accountRepository).findById(accountId);
+    }
+
+    @Test
+    public void findById_nonExistingId_shouldThrowRuntimeException() {
+        // Arrange
+        Long nonExistingId = -1L;
+        when(accountRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> accountService.findById(nonExistingId))
+                .withMessage("Did not find account of id: " + nonExistingId);
+        verify(accountRepository).findById(nonExistingId);
+    }
+
+    @Test
+    public void deleteById_shouldCallRepositoryDelete() {
+        // Arrange
+        Long testId = 1L;
+        // Act
+        accountService.deleteById(testId);
+        //Assert
+        verify(accountRepository).deleteById(testId);
     }
 }
