@@ -1,6 +1,8 @@
 package com.montelzek.moneytrack.service;
 
+import com.montelzek.moneytrack.dto.AccountDTO;
 import com.montelzek.moneytrack.dto.BudgetDTO;
+import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.model.Budget;
 import com.montelzek.moneytrack.model.Category;
 import com.montelzek.moneytrack.model.User;
@@ -19,6 +21,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -260,5 +263,56 @@ public class BudgetServiceImplTest {
         verify(budgetRepository).findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                 user.getId(), LocalDate.now(), LocalDate.now()
         );
+    }
+
+    @Test
+    public void saveBudget_idIsNull_shouldCreateNewBudget() {
+        // Arrange
+        BudgetDTO newBudgetDTO = BudgetDTO.builder()
+                .id(null)
+                .name("New Budget")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(10))
+                .budgetSize(BigDecimal.valueOf(1000))
+                .categoryId(category.getId())
+                .build();
+
+        when(userService.getCurrentUserId()).thenReturn(1L);
+        when(userService.findById(1L)).thenReturn(Optional.of(user));
+        when(categoryService.findById(category.getId())).thenReturn(category);
+        when(budgetRepository.save(any(Budget.class))).thenReturn(budget);
+
+        // Act
+        budgetService.saveBudget(newBudgetDTO);
+
+        // Assert
+        verify(userService).getCurrentUserId();
+        verify(userService).findById(1L);
+        verify(categoryService).findById(category.getId());
+        verify(budgetRepository).save(any(Budget.class));
+    }
+
+    @Test
+    public void saveBudget_idIsNotNull_shouldUpdateBudget() {
+        // Arrange
+        BudgetDTO existingBudgetDTO = BudgetDTO.builder()
+                .id(1L)
+                .name("Update Budget")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(10))
+                .budgetSize(BigDecimal.valueOf(1000))
+                .categoryId(category.getId())
+                .build();
+
+        when(budgetRepository.findById(1L)).thenReturn(Optional.of(budget));
+        when(budgetRepository.save(budget)).thenReturn(budget);
+
+        // Act
+        budgetService.saveBudget(existingBudgetDTO);
+
+        // Assert
+        assertThat(budget.getName()).isEqualTo("Update Budget");
+        verify(budgetRepository).findById(1L);
+        verify(budgetRepository).save(budget);
     }
 }
