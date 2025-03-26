@@ -10,8 +10,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -60,5 +61,40 @@ public class CategoryServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(categoryRepository).findByType("NON_EXISTENT");
+    }
+
+    @Test
+    public void findById_validId_shouldReturnCategory() {
+        // Arrange
+        Category category1 = Category.builder()
+                .id(1)
+                .name("Groceries")
+                .type("EXPENSE")
+                .build();
+
+        when(categoryRepository.findById(1)).thenReturn(Optional.of(category1));
+
+        // Act
+        Category result = categoryService.findById(1);
+
+        // Assert
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(1);
+        assertThat(result.getName()).isEqualTo("Groceries");
+        assertThat(result.getType()).isEqualTo("EXPENSE");
+        verify(categoryRepository).findById(1);
+    }
+
+    @Test
+    public void findById_notValidId_shouldThrowRuntimeException() {
+        // Arrange
+        when(categoryRepository.findById(999)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> categoryService.findById(999))
+                .withMessage("Category not found with id: 999");
+
+        verify(categoryRepository).findById(999);
     }
 }
