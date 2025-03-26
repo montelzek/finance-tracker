@@ -15,8 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -98,5 +100,59 @@ public class BudgetServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result).isEmpty();
         verify(budgetRepository).findByUserId_OrderByCreatedAt(-1L);
+    }
+
+    @Test
+    public void save_validBudget_shouldSaveBudget() {
+        // Arrange
+        when(budgetRepository.save(budget)).thenReturn(budget);
+
+        // Act
+        Budget savedBudget = budgetService.save(budget);
+
+        // Assert
+        assertThat(savedBudget).isEqualTo(budget);
+        verify(budgetRepository).save(budget);
+    }
+
+    @Test
+    public void findById_existingId_shouldReturnBudget() {
+        // Arrange
+        Long budgetId = budget.getId();
+        when(budgetRepository.findById(budgetId)).thenReturn(Optional.of(budget));
+
+        // Act
+        Budget foundBudget = budgetService.findById(budgetId);
+
+        // Assert
+        assertThat(foundBudget).isNotNull();
+        assertThat(foundBudget.getName()).isEqualTo(budget.getName());
+        assertThat(foundBudget.getBudgetSize()).isEqualTo(budget.getBudgetSize());
+        assertThat(foundBudget.getStartDate()).isEqualTo(budget.getStartDate());
+        assertThat(foundBudget.getEndDate()).isEqualTo(budget.getEndDate());
+        verify(budgetRepository).findById(budgetId);
+    }
+
+    @Test
+    public void findById_nonExistingId_shouldThrowRuntimeException() {
+        // Arrange
+        Long nonExistingId = -1L;
+        when(budgetRepository.findById(nonExistingId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> budgetService.findById(nonExistingId))
+                .withMessage("Budget not find with id: " + nonExistingId);
+        verify(budgetRepository).findById(nonExistingId);
+    }
+
+    @Test
+    public void deleteById_shouldCallRepositoryDelete() {
+        // Arrange
+        Long testId = 1L;
+        // Act
+        budgetService.deleteById(testId);
+        //Assert
+        verify(budgetRepository).deleteById(testId);
     }
 }
