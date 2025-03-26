@@ -67,7 +67,7 @@ public class BudgetServiceImplTest {
                 .build();
 
         budgetDTO = BudgetDTO.builder()
-                .id(1L)
+                .id(null)
                 .name("Test Budget DTO")
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(20))
@@ -314,5 +314,35 @@ public class BudgetServiceImplTest {
         assertThat(budget.getName()).isEqualTo("Update Budget");
         verify(budgetRepository).findById(1L);
         verify(budgetRepository).save(budget);
+    }
+
+    @Test
+    public void createBudget_shouldCreateNewBudget() {
+        // Arrange
+        when(userService.getCurrentUserId()).thenReturn(1L);
+        when(userService.findById(1L)).thenReturn(Optional.of(user));
+        when(categoryService.findById(category.getId())).thenReturn(category);
+        when(budgetRepository.save(any(Budget.class))).thenReturn(budget);
+
+        // Act
+        budgetService.saveBudget(budgetDTO);
+
+        // Assert
+        verify(userService).getCurrentUserId();
+        verify(userService).findById(1L);
+        verify(categoryService).findById(category.getId());
+        verify(budgetRepository).save(any(Budget.class));
+    }
+
+    @Test
+    public void createBudget_userNotFound_shouldThrowException() {
+        // Arrange
+        when(userService.getCurrentUserId()).thenReturn(1L);
+        when(userService.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> budgetService.createBudget(budgetDTO))
+                .withMessage("User not found");
     }
 }
