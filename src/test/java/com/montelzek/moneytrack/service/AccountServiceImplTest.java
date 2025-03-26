@@ -191,4 +191,32 @@ public class AccountServiceImplTest {
         verify(accountRepository).findById(1L);
         verify(accountRepository).save(account);
     }
+
+    @Test
+    public void createAccount_ShouldCreateNewAccount() {
+        // Arrange
+        when(userService.getCurrentUserId()).thenReturn(1L);
+        when(userService.findById(1L)).thenReturn(Optional.of(user));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        accountService.createAccount(accountDTO);
+
+        // Assert
+        verify(userService).getCurrentUserId();
+        verify(userService).findById(1L);
+        verify(accountRepository).save(any(Account.class));
+    }
+
+    @Test
+    public void createAccount_userNotFound_shouldThrowException() {
+        // Arrange
+        when(userService.getCurrentUserId()).thenReturn(1L);
+        when(userService.findById(1L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> accountService.createAccount(accountDTO))
+                .withMessage("User not found");
+    }
 }
