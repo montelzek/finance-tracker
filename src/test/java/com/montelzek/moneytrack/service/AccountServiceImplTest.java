@@ -12,14 +12,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AccountServiceImplTest {
@@ -247,5 +247,31 @@ public class AccountServiceImplTest {
                 .withMessage("Account ID can't be null");
     }
 
+    @Test
+    public void getTotalBalance_shouldReturnTotalBalance() {
+        // Arrange
+        Account account1 = Account.builder()
+                .balance(BigDecimal.valueOf(1000))
+                .currency(Account.Currency.USD)
+                .build();
+        Account account2 = Account.builder()
+                .balance(BigDecimal.valueOf(2000))
+                .currency(Account.Currency.USD)
+                .build();
 
+        when(accountRepository.findByUserId(user.getId())).thenReturn(Arrays.asList(account1, account2));
+        when(exchangeRateService.convertToUSD(String.valueOf(account1.getCurrency()), account1.getBalance()))
+                .thenReturn(account1.getBalance());
+        when(exchangeRateService.convertToUSD(String.valueOf(account2.getCurrency()), account2.getBalance()))
+                .thenReturn(account2.getBalance());
+
+        // Act
+        BigDecimal totalBalance = accountService.getTotalBalance(user.getId());
+
+        // Assert
+        assertThat(totalBalance).isEqualTo(BigDecimal.valueOf(3000));
+        verify(accountRepository).findByUserId(1L);
+        verify(exchangeRateService).convertToUSD("USD", BigDecimal.valueOf(1000));
+        verify(exchangeRateService).convertToUSD("USD", BigDecimal.valueOf(2000));
+    }
 }
