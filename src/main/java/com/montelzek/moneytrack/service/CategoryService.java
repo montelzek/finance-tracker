@@ -4,7 +4,6 @@ import com.montelzek.moneytrack.model.Category;
 import java.util.List;
 
 public interface CategoryService {
-    List<Category> findAll();
     List<Category> findByType(String type);
     Category findById(Integer id);
 }
