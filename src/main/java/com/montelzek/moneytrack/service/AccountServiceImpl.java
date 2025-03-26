@@ -76,7 +76,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void updateAccount(AccountDTO accountDTO) {
         if (accountDTO.getId() == null) {
-            throw new IllegalArgumentException("Budget ID can't be null");
+            throw new IllegalArgumentException("Account ID can't be null");
         }
 
         Account account = findById(accountDTO.getId());
@@ -95,7 +95,8 @@ public class AccountServiceImpl implements AccountService {
         BigDecimal totalBalance = BigDecimal.ZERO;
 
         for (Account account : accounts) {
-            totalBalance = totalBalance.add(exchangeRateService.convertToUSD(String.valueOf(account.getCurrency()), account.getBalance()));
+            totalBalance = totalBalance.add(exchangeRateService.convertToUSD(String.valueOf(account.getCurrency()),
+                    account.getBalance()));
         }
 
         return totalBalance;
@@ -103,12 +104,12 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDTO convertToDTO(Account account) {
-        AccountDTO accountDTO = new AccountDTO();
-        accountDTO.setId(account.getId());
-        accountDTO.setName(account.getName());
-        accountDTO.setAccountType(account.getAccountType());
-        accountDTO.setBalance(account.getBalance());
-        accountDTO.setCurrency(account.getCurrency());
-        return accountDTO;
+        return AccountDTO.builder()
+                .id(account.getId())
+                .name(account.getName())
+                .accountType(account.getAccountType())
+                .balance(account.getBalance())
+                .currency(account.getCurrency())
+                .build();
     }
 }
