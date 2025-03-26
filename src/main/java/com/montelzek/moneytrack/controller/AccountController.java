@@ -57,7 +57,7 @@ public class AccountController {
 
         try {
             accountService.saveAccount(accountDTO);
-            return "redirect:/budgets";
+            return "redirect:/accounts";
         } catch (IllegalArgumentException | IllegalStateException e) {
             result.rejectValue("", "error.general", e.getMessage());
             prepareAccountModel(model);
