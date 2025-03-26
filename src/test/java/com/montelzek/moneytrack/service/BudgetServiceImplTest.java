@@ -206,4 +206,59 @@ public class BudgetServiceImplTest {
                 user.getId(), category, LocalDate.now().plusDays(3), LocalDate.now().plusDays(3)
         );
     }
+
+    @Test
+    public void findActiveBudgets_fourActiveBudgets_shouldReturn4Budgets() {
+        // Arrange
+        Budget budget1 = Budget.builder()
+                .user(user)
+                .startDate(LocalDate.now().minusDays(15))
+                .endDate(LocalDate.now().plusDays(15))
+                .build();
+        Budget budget2 = Budget.builder()
+                .user(user)
+                .startDate(LocalDate.now().minusDays(15))
+                .endDate(LocalDate.now().plusDays(15))
+                .build();
+        Budget budget3 = Budget.builder()
+                .user(user)
+                .startDate(LocalDate.now().minusDays(15))
+                .endDate(LocalDate.now().plusDays(15))
+                .build();
+        Budget budget4 = Budget.builder()
+                .user(user)
+                .startDate(LocalDate.now().minusDays(15))
+                .endDate(LocalDate.now().plusDays(15))
+                .build();
+        when(budgetRepository.findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), LocalDate.now(), LocalDate.now()
+        )).thenReturn(List.of(budget1, budget2, budget3, budget4));
+
+        // Act
+        List<Budget> activeBudgets = budgetService.findActiveBudgets(user.getId(), LocalDate.now());
+
+        // Assert
+        assertThat(activeBudgets).hasSize(4);
+        verify(budgetRepository).findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), LocalDate.now(), LocalDate.now()
+        );
+    }
+
+    @Test
+    public void findActiveBudgets_zeroActiveBudgets_shouldReturnEmptyList() {
+        // Arrange
+        when(budgetRepository.findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), LocalDate.now(), LocalDate.now()
+        )).thenReturn(List.of());
+
+        // Act
+        List<Budget> activeBudgets = budgetService.findActiveBudgets(user.getId(), LocalDate.now());
+
+        // Assert
+        assertThat(activeBudgets).isNotNull();
+        assertThat(activeBudgets).isEmpty();
+        verify(budgetRepository).findTop4ByUserIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
+                user.getId(), LocalDate.now(), LocalDate.now()
+        );
+    }
 }
