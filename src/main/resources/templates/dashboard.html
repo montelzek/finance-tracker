@@ -367,7 +367,7 @@
                                     <select class="form-select" id="accountNameIncome" th:field="*{accountId}" required>
                                         <option th:each="account : ${accounts}"
                                                 th:value="${account.id}"
-                                                th:text="${account.name}">
+                                                th:text="${account.name + ' ' + account.currency}">
                                         </option>
                                     </select>
                                     <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
@@ -414,7 +414,7 @@
                                     <select class="form-select" id="accountNameGoal" th:field="*{accountId}" required>
                                         <option th:each="account : ${accounts}"
                                                 th:value="${account.id}"
-                                                th:text="${account.name}">
+                                                th:text="${account.name + ' ' + account.currency}">
                                         </option>
                                     </select>
                                     <div class="text-danger" th:if="${#fields.hasErrors('accountId')}" th:errors="*{accountId}"></div>
