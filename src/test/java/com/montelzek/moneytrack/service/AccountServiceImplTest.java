@@ -274,4 +274,17 @@ public class AccountServiceImplTest {
         verify(exchangeRateService).convertToUSD("USD", BigDecimal.valueOf(1000));
         verify(exchangeRateService).convertToUSD("USD", BigDecimal.valueOf(2000));
     }
+
+    @Test
+    public void convertToDTO_shouldConvertAccountToDTO() {
+        // Act
+        AccountDTO convertedDTO = accountService.convertToDTO(account);
+
+        // Assert
+        assertThat(convertedDTO.getId()).isEqualTo(account.getId());
+        assertThat(convertedDTO.getName()).isEqualTo(account.getName());
+        assertThat(convertedDTO.getAccountType()).isEqualTo(account.getAccountType());
+        assertThat(convertedDTO.getBalance()).isEqualTo(account.getBalance());
+        assertThat(convertedDTO.getCurrency()).isEqualTo(account.getCurrency());
+    }
 }
