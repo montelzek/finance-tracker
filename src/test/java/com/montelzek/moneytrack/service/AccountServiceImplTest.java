@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +55,7 @@ public class AccountServiceImplTest {
 
         accountDTO = AccountDTO.builder()
                 .id(1L)
-                .name("Test Account")
+                .name("Test Account DTO")
                 .accountType(Account.AccountType.CHECKING)
                 .balance(BigDecimal.valueOf(3000))
                 .currency(Account.Currency.USD)
@@ -142,5 +143,52 @@ public class AccountServiceImplTest {
         accountService.deleteById(testId);
         //Assert
         verify(accountRepository).deleteById(testId);
+    }
+
+    @Test
+    public void saveAccount_idIsNull_shouldCreateNewAccount() {
+        // Arrange
+        AccountDTO newAccountDTO = AccountDTO.builder()
+                .id(null)
+                .name("New Account")
+                .accountType(Account.AccountType.CHECKING)
+                .balance(BigDecimal.valueOf(3000))
+                .currency(Account.Currency.USD)
+                .build();
+
+        when(userService.getCurrentUserId()).thenReturn(1L);
+        when(userService.findById(1L)).thenReturn(Optional.of(user));
+        when(accountRepository.save(any(Account.class))).thenReturn(account);
+
+        // Act
+        accountService.saveAccount(newAccountDTO);
+
+        // Assert
+        verify(userService).getCurrentUserId();
+        verify(userService).findById(1L);
+        verify(accountRepository).save(any(Account.class));
+    }
+
+    @Test
+    public void saveAccount_idIsNotNull_shouldUpdateAccount() {
+        // Arrange
+        AccountDTO existingAccountDTO = AccountDTO.builder()
+                .id(1L)
+                .name("Update Account")
+                .accountType(Account.AccountType.CHECKING)
+                .balance(BigDecimal.valueOf(3000))
+                .currency(Account.Currency.USD)
+                .build();
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.save(account)).thenReturn(account);
+
+        // Act
+        accountService.saveAccount(existingAccountDTO);
+
+        // Assert
+        assertThat(account.getName()).isEqualTo("Update Account");
+        verify(accountRepository).findById(1L);
+        verify(accountRepository).save(account);
     }
 }
