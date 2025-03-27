@@ -29,8 +29,6 @@ public class ExchangeRateServiceTest {
     @Test
     public void updateRates_successResponse_shouldUpdateRates() {
         // Arrange
-        String url = "https://test-url.com";
-
         ExchangeRateResponse response = new ExchangeRateResponse();
         response.setResult("success");
         Map<String, Double> conversionRates = new HashMap<>();
@@ -55,5 +53,20 @@ public class ExchangeRateServiceTest {
         assertThat(rates.get("GBP")).isEqualTo(new BigDecimal("0.79"));
         assertThat(rates.get("CHF")).isEqualTo(new BigDecimal("0.91"));
         assertThat(rates.get("JPY")).isEqualTo(new BigDecimal("151.5"));
+    }
+
+    @Test
+    public void updateRates_errorResponse_shouldNotUpdateRates() {
+        // Arrange
+        ExchangeRateResponse mockResponse = new ExchangeRateResponse();
+        mockResponse.setResult("error");
+        when(restTemplate.getForObject(anyString(), eq(ExchangeRateResponse.class))).thenReturn(mockResponse);
+
+        // Act
+        exchangeRateService.updateRates();
+        Map<String, BigDecimal> rates = exchangeRateService.getRates();
+
+        // Assert
+        assertThat(rates).isEmpty();
     }
 }
