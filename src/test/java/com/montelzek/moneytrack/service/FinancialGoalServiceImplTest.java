@@ -138,4 +138,45 @@ public class FinancialGoalServiceImplTest {
         //Assert
         verify(financialGoalRepository).deleteById(testId);
     }
+
+    @Test
+    public void findTop3Goals_given3Goals_shouldReturn3Goals() {
+        // Arrange
+        FinancialGoal financialGoal1 = FinancialGoal.builder()
+                .name("Goal 1")
+                .user(user)
+                .build();
+        FinancialGoal financialGoal2 = FinancialGoal.builder()
+                .name("Goal 2")
+                .user(user)
+                .build();
+        FinancialGoal financialGoal3 = FinancialGoal.builder()
+                .name("Goal 3")
+                .user(user)
+                .build();
+        when(financialGoalRepository.findTop3ByUserId(user.getId()))
+                .thenReturn(List.of(financialGoal1, financialGoal2, financialGoal3));
+
+        // Act
+        List<FinancialGoal> financialGoals = financialGoalService.findTop3Goals(user.getId());
+
+        // Assert
+        assertThat(financialGoals).hasSize(3);
+        verify(financialGoalRepository).findTop3ByUserId(user.getId());
+    }
+
+    @Test
+    public void findTop3Goals_zeroGoals_shouldReturnEmptyList() {
+        // Arrange
+        when(financialGoalRepository.findTop3ByUserId(user.getId()))
+                .thenReturn(List.of());
+
+        // Act
+        List<FinancialGoal> financialGoals = financialGoalService.findTop3Goals(user.getId());
+
+        // Assert
+        assertThat(financialGoals).isNotNull();
+        assertThat(financialGoals).isEmpty();
+        verify(financialGoalRepository).findTop3ByUserId(user.getId());
+    }
 }
