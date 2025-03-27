@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -68,5 +68,38 @@ public class ExchangeRateServiceTest {
 
         // Assert
         assertThat(rates).isEmpty();
+    }
+
+    @Test
+    public void convertToUSD_currencyUSD_shouldReturnTheSameAmount() {
+        // Arrange
+        BigDecimal amount = BigDecimal.valueOf(10);
+
+        // Act
+        BigDecimal convertedAmount = exchangeRateService.convertToUSD("USD", amount);
+
+        // Assert
+        assertThat(convertedAmount).isEqualTo(amount);
+    }
+
+    @Test
+    public void convertToUSD_differentThanUSD_andValidCurrency_shouldReturnConvertedAmount() {
+        // Arrange
+        BigDecimal amount = BigDecimal.valueOf(10);
+        exchangeRateService.getRates().put("EUR", new BigDecimal("0.93"));
+
+        // Act
+        BigDecimal convertedAmount = exchangeRateService.convertToUSD("EUR", amount);
+
+        // Assert
+        assertThat(convertedAmount).isEqualTo(new BigDecimal("10.75"));
+    }
+
+    @Test
+    public void convertToUSD_missingRate_shouldThrowException() {
+        // Act & Assert
+        assertThatExceptionOfType(RuntimeException.class)
+                .isThrownBy(() -> exchangeRateService.convertToUSD("AAA", BigDecimal.valueOf(10)))
+                .withMessage("No rate for the currency: AAA");
     }
 }
