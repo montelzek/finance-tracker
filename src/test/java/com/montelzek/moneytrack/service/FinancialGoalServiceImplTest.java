@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -281,5 +282,55 @@ public class FinancialGoalServiceImplTest {
                 .withMessage("Budget ID can't be null");
     }
 
+    @Test
+    public void updateAchievementStatus_currentAmountEqualsTarget_andNotAchieved_shouldSetIsAchievedTrue() throws Exception {
+        // Arrange
+        FinancialGoal financialGoal = new FinancialGoal();
+        financialGoal.setCurrentAmount(BigDecimal.valueOf(100));
+        financialGoal.setTargetAmount(BigDecimal.valueOf(100));
+        financialGoal.setIsAchieved(false);
+
+        // Act
+        invokeUpdateAchievementStatus(financialGoal);
+
+        // Assert
+        assertThat(financialGoal.getIsAchieved()).isTrue();
+    }
+
+    @Test
+    public void updateAchievementStatus_currentAmountExceedsTarget_andNotAchieved_shouldSetIsAchievedTrue() throws Exception {
+        // Arrange
+        FinancialGoal financialGoal = new FinancialGoal();
+        financialGoal.setCurrentAmount(BigDecimal.valueOf(110));
+        financialGoal.setTargetAmount(BigDecimal.valueOf(100));
+        financialGoal.setIsAchieved(false);
+
+        // Act
+        invokeUpdateAchievementStatus(financialGoal);
+
+        // Assert
+        assertThat(financialGoal.getIsAchieved()).isTrue();
+    }
+
+    @Test
+    public void updateAchievementStatus_currentAmountBelowTarget_andAchieved_shouldSetIsAchievedFalse() throws Exception {
+        // Arrange
+        FinancialGoal financialGoal = new FinancialGoal();
+        financialGoal.setCurrentAmount(BigDecimal.valueOf(90));
+        financialGoal.setTargetAmount(BigDecimal.valueOf(100));
+        financialGoal.setIsAchieved(false);
+
+        // Act
+        invokeUpdateAchievementStatus(financialGoal);
+
+        // Assert
+        assertThat(financialGoal.getIsAchieved()).isFalse();
+    }
+
+    private void invokeUpdateAchievementStatus(FinancialGoal financialGoal) throws Exception {
+        Method method = FinancialGoalServiceImpl.class.getDeclaredMethod("updateAchievementStatus", FinancialGoal.class);
+        method.setAccessible(true);
+        method.invoke(financialGoalService, financialGoal);
+    }
 
 }
