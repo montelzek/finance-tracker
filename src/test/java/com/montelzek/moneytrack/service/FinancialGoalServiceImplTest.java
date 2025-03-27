@@ -1,8 +1,6 @@
 package com.montelzek.moneytrack.service;
 
-import com.montelzek.moneytrack.dto.AccountDTO;
 import com.montelzek.moneytrack.dto.FinancialGoalDTO;
-import com.montelzek.moneytrack.model.Account;
 import com.montelzek.moneytrack.model.FinancialGoal;
 import com.montelzek.moneytrack.model.User;
 import com.montelzek.moneytrack.repository.FinancialGoalRepository;
@@ -331,6 +329,17 @@ public class FinancialGoalServiceImplTest {
         Method method = FinancialGoalServiceImpl.class.getDeclaredMethod("updateAchievementStatus", FinancialGoal.class);
         method.setAccessible(true);
         method.invoke(financialGoalService, financialGoal);
+    }
+
+    @Test
+    public void convertToDTO_shouldConvertFinancialGoalToDTO() {
+        // Act
+        FinancialGoalDTO financialGoalDTO = financialGoalService.convertToDTO(financialGoal);
+
+        // Assert
+        assertThat(financialGoalDTO.getId()).isEqualTo(financialGoal.getId());
+        assertThat(financialGoalDTO.getName()).isEqualTo(financialGoal.getName());
+        assertThat(financialGoalDTO.getTargetAmount()).isEqualTo(financialGoal.getTargetAmount());
     }
 
 }
