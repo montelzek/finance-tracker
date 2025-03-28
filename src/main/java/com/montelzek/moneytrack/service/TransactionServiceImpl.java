@@ -59,13 +59,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional
-    public Transaction save(Transaction transaction) {
-        applyBudgetEffect(transaction);
-        return transactionRepository.save(transaction);
-    }
-
-    @Override
-    @Transactional
     public void deleteById(Long id) {
         Transaction transaction = findById(id);
         Account account = transaction.getAccount();

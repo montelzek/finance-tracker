@@ -17,8 +17,6 @@ public interface TransactionService {
 
     Transaction findById(Long id);
 
-    Transaction save(Transaction transaction);
-
     void deleteById(Long id);
 
     void createTransaction(TransactionDTO transactionDTO);
