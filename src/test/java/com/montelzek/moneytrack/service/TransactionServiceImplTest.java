@@ -1,9 +1,8 @@
 package com.montelzek.moneytrack.service;
 
+import com.montelzek.moneytrack.dto.FinancialGoalDTO;
 import com.montelzek.moneytrack.dto.TransactionDTO;
-import com.montelzek.moneytrack.model.Account;
-import com.montelzek.moneytrack.model.Transaction;
-import com.montelzek.moneytrack.model.User;
+import com.montelzek.moneytrack.model.*;
 import com.montelzek.moneytrack.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,14 +56,21 @@ public class TransactionServiceImplTest {
     private Transaction transaction;
     private TransactionDTO transactionDTO;
     private Account account;
+    private Category category;
 
     @BeforeEach
     public void setup() {
         user = User.builder().id(1L).build();
 
+        category = Category.builder()
+                .id(1)
+                .build();
+
         account = Account.builder()
                 .id(1L)
                 .user(user)
+                .balance(BigDecimal.valueOf(5000))
+                .currency(Account.Currency.USD)
                 .build();
 
         transaction = Transaction.builder()
@@ -72,6 +78,7 @@ public class TransactionServiceImplTest {
                 .account(account)
                 .amount(BigDecimal.valueOf(1000))
                 .date(LocalDate.now())
+                .category(category)
                 .build();
     }
 
@@ -161,5 +168,81 @@ public class TransactionServiceImplTest {
                 .isThrownBy(() -> transactionService.findById(nonExistingId))
                 .withMessage("Transaction not found with id: " + nonExistingId);
         verify(transactionRepository).findById(nonExistingId);
+    }
+
+    @Test
+    public void deleteById_incomeTransaction_shouldRevertBalance_andDeleteTransaction() {
+        // Arrange
+        category.setType("INCOME");
+        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.of(transaction));
+
+        // Act
+        transactionService.deleteById(transaction.getId());
+
+        // Assert
+        assertThat(account.getBalance()).isEqualTo("4000");
+        verify(transactionRepository).findById(transaction.getId());
+        verify(transactionRepository).deleteById(transaction.getId());
+        verify(accountService).save(account);
+    }
+
+    @Test
+    public void deleteById_expenseTransaction_shouldRevertBalanceAndBudget_andDeleteTransaction() {
+        // Arrange
+        category.setName("Groceries");
+        category.setType("EXPENSE");
+
+        Budget budget = Budget.builder()
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(15))
+                .budgetSize(BigDecimal.valueOf(2000))
+                .budgetSpent(BigDecimal.valueOf(1500))
+                .user(user)
+                .category(category)
+                .build();
+
+        transaction.setBudget(budget);
+
+        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.of(transaction));
+        when(exchangeRateService.convertToUSD("USD", BigDecimal.valueOf(1000)))
+                .thenReturn(BigDecimal.valueOf(1000));
+
+        // Act
+        transactionService.deleteById(transaction.getId());
+
+        // Assert
+        assertThat(account.getBalance()).isEqualTo("6000");
+        assertThat(budget.getBudgetSpent()).isEqualTo("500");
+        verify(transactionRepository).findById(transaction.getId());
+        verify(transactionRepository).deleteById(transaction.getId());
+        verify(accountService).save(account);
+    }
+
+    @Test
+    public void deleteById_financialGoalTransaction_shouldRevertBalanceAndGoal_andDeleteTransaction() {
+        // Arrange
+        category.setType("FINANCIAL_GOAL");
+
+        FinancialGoal financialGoal = FinancialGoal.builder()
+                .targetAmount(BigDecimal.valueOf(1500))
+                .currentAmount(BigDecimal.valueOf(1200))
+                .user(user)
+                .build();
+
+        transaction.setFinancialGoal(financialGoal);
+
+        when(transactionRepository.findById(transaction.getId())).thenReturn(Optional.of(transaction));
+        when(exchangeRateService.convertToUSD("USD", BigDecimal.valueOf(1000)))
+                .thenReturn(BigDecimal.valueOf(1000));
+
+        // Act
+        transactionService.deleteById(transaction.getId());
+
+        // Assert
+        assertThat(account.getBalance()).isEqualTo("6000");
+        assertThat(financialGoal.getCurrentAmount()).isEqualTo("200");
+        verify(transactionRepository).findById(transaction.getId());
+        verify(transactionRepository).deleteById(transaction.getId());
+        verify(accountService).save(account);
     }
 }
