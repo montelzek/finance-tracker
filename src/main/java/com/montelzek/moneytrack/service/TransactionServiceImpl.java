@@ -12,10 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -206,11 +203,13 @@ public class TransactionServiceImpl implements TransactionService {
             );
             if (!budgets.isEmpty()) {
                 Budget budget = budgets.getFirst();
-                transaction.setBudget(budget);
-                String currency = String.valueOf(transaction.getAccount().getCurrency());
-                BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
-                budget.setBudgetSpent(budget.getBudgetSpent().add(amountInUSD));
-                budgetService.save(budget);
+                if (budget.getEndDate().isAfter(LocalDate.now()) || Objects.equals(budget.getEndDate(), LocalDate.now())) {
+                    transaction.setBudget(budget);
+                    String currency = String.valueOf(transaction.getAccount().getCurrency());
+                    BigDecimal amountInUSD = exchangeRateService.convertToUSD(currency, transaction.getAmount());
+                    budget.setBudgetSpent(budget.getBudgetSpent().add(amountInUSD));
+                    budgetService.save(budget);
+                }
             } else {
                 transaction.setBudget(null);
             }
