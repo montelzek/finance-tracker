@@ -1,8 +1,7 @@
 package com.montelzek.moneytrack.dto;
 
 import jakarta.validation.constraints.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
@@ -10,6 +9,9 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class BudgetDTO {
 
     @NotBlank(message = "Name can't be empty.")
