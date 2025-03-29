@@ -101,10 +101,10 @@ class FinancialGoalServiceImpl implements FinancialGoalService {
 
     @Override
     public FinancialGoalDTO convertToDTO(FinancialGoal financialGoal) {
-        FinancialGoalDTO financialGoalDTO = new FinancialGoalDTO();
-        financialGoalDTO.setId(financialGoal.getId());
-        financialGoalDTO.setName(financialGoal.getName());
-        financialGoalDTO.setTargetAmount(financialGoal.getTargetAmount());
-        return financialGoalDTO;
+        return FinancialGoalDTO.builder()
+                .id(financialGoal.getId())
+                .name(financialGoal.getName())
+                .targetAmount(financialGoal.getTargetAmount())
+                .build();
     }
 }
