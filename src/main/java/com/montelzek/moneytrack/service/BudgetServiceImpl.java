@@ -108,13 +108,13 @@ class BudgetServiceImpl implements BudgetService {
 
     @Override
     public BudgetDTO convertToDTO(Budget budget) {
-        BudgetDTO budgetDTO = new BudgetDTO();
-        budgetDTO.setId(budget.getId());
-        budgetDTO.setName(budget.getName());
-        budgetDTO.setStartDate(budget.getStartDate());
-        budgetDTO.setEndDate(budget.getEndDate());
-        budgetDTO.setBudgetSize(budget.getBudgetSize());
-        budgetDTO.setCategoryId(budget.getCategory().getId());
-        return budgetDTO;
+        return BudgetDTO.builder()
+                .id(budget.getId())
+                .name(budget.getName())
+                .startDate(budget.getStartDate())
+                .endDate(budget.getEndDate())
+                .budgetSize(budget.getBudgetSize())
+                .categoryId(budget.getCategory().getId())
+                .build();
     }
 }
