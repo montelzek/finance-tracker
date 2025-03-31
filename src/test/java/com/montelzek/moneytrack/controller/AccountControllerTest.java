@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -145,5 +144,20 @@ public class AccountControllerTest {
                 .andExpect(model().attributeHasFieldErrors("account", "accountType"));
 
         verify(accountService, never()).saveAccount(accountDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void deleteAccount_successfulDeletion_shouldRedirectToAccounts() throws Exception {
+        // Arrange
+        doNothing().when(accountService).deleteById(account1.getId());
+
+        // Act & Assert
+        mockMvc.perform(get("/accounts/delete")
+                .param("accountId", String.valueOf(account1.getId())))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/accounts"));
+
+        verify(accountService).deleteById(account1.getId());
     }
 }
