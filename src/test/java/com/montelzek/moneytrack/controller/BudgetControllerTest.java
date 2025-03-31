@@ -22,9 +22,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BudgetController.class)
@@ -115,5 +116,59 @@ public class BudgetControllerTest {
 
         verify(budgetService).findById(1L);
         verify(budgetService).convertToDTO(budget);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveBudget_successfulSave_shouldRedirectToBudget() throws Exception {
+        // Arrange
+        doNothing().when(budgetService).saveBudget(budgetDTO);
+
+        // Act & Assert
+        mockMvc.perform(post("/budgets/save")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .flashAttr("budget", budgetDTO))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/budgets"));
+
+        verify(budgetService).saveBudget(budgetDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveBudget_invalidData_shouldReturnBudgetListView() throws Exception {
+        // Arrange
+        budgetDTO.setBudgetSize(null);
+
+        // Act & Assert
+        mockMvc.perform(post("/budgets/save")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .flashAttr("budget", budgetDTO))
+                .andExpect(status().isOk())
+                .andExpect(view().name("budgets/list"))
+                .andExpect(model().attributeHasFieldErrors("budget", "budgetSize"));
+
+        verify(budgetService, never()).saveBudget(budgetDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveBudget_illegalArgumentException_shouldReturnListWithViewWithError() throws Exception{
+        // Arrange
+        doThrow(new IllegalArgumentException()).when(budgetService).saveBudget(budgetDTO);
+
+        // Act & Arrange
+        mockMvc.perform(post("/budgets/save")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .flashAttr("budget", budgetDTO))
+                .andExpect(status().isOk())
+                .andExpect(view().name("budgets/list"))
+                .andExpect(model().hasErrors())
+                .andExpect(model().attributeHasErrors("budget"));
+
+        verify(budgetService).saveBudget(budgetDTO);
     }
 }

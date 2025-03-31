@@ -148,6 +148,25 @@ public class AccountControllerTest {
 
     @Test
     @WithMockUser
+    public void saveAccount_illegalArgumentException_shouldReturnListWithViewWithError() throws Exception{
+        // Arrange
+        doThrow(new IllegalArgumentException()).when(accountService).saveAccount(accountDTO);
+
+        // Act & Arrange
+        mockMvc.perform(post("/accounts/save")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .flashAttr("account", accountDTO))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/list"))
+                .andExpect(model().hasErrors())
+                .andExpect(model().attributeHasErrors("account"));
+
+        verify(accountService).saveAccount(accountDTO);
+    }
+
+    @Test
+    @WithMockUser
     public void deleteAccount_successfulDeletion_shouldRedirectToAccounts() throws Exception {
         // Arrange
         doNothing().when(accountService).deleteById(account1.getId());
