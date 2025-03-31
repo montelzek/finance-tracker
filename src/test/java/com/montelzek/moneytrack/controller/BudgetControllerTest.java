@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -68,12 +69,18 @@ public class BudgetControllerTest {
                 .build();
 
         budgetDTO = BudgetDTO.builder()
+                .id(1L)
+                .name("Test Budget")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(14))
+                .budgetSize(BigDecimal.valueOf(3000))
+                .categoryId(category.getId())
                 .build();
     }
 
     @Test
     @WithMockUser
-    public void listAccount_shouldReturnListViewWithAccounts() throws Exception {
+    public void listBudget_shouldReturnListViewWithBudgets() throws Exception {
         // Arrange
         when(userService.getCurrentUserId()).thenReturn(testUser.getId());
         when(budgetService.findUsersBudgets(testUser.getId()))
@@ -89,5 +96,24 @@ public class BudgetControllerTest {
         verify(userService).getCurrentUserId();
         verify(budgetService).findUsersBudgets(testUser.getId());
         verify(categoryService).findByType(category.getType());
+    }
+
+    @Test
+    @WithMockUser
+    public void getBudgetForEdit_shouldReturnAccountDTOasJson() throws Exception {
+        // Arrange
+        when(budgetService.findById(1L)).thenReturn(budget);
+        when(budgetService.convertToDTO(budget)).thenReturn(budgetDTO);
+
+        // Act & Assert
+        mockMvc.perform(get("/budgets/edit/{id}", 1L)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Test Budget"));
+
+        verify(budgetService).findById(1L);
+        verify(budgetService).convertToDTO(budget);
     }
 }
