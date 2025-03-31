@@ -171,4 +171,19 @@ public class BudgetControllerTest {
 
         verify(budgetService).saveBudget(budgetDTO);
     }
+
+    @Test
+    @WithMockUser
+    public void deleteBudget_successfulDeletion_shouldRedirectToBudgets() throws Exception {
+        // Arrange
+        doNothing().when(budgetService).deleteById(budget.getId());
+
+        // Act & Assert
+        mockMvc.perform(get("/budgets/delete")
+                        .param("budgetId", String.valueOf(budget.getId())))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/budgets"));
+
+        verify(budgetService).deleteById(budget.getId());
+    }
 }
