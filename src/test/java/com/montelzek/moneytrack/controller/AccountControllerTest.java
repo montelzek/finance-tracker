@@ -18,9 +18,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AccountController.class)
@@ -87,8 +89,8 @@ public class AccountControllerTest {
                 .andExpect(view().name("accounts/list"))
                 .andExpect(model().attributeExists("account", "accountTypes", "currencies", "accounts"));
 
-        verify(userService, times(1)).getCurrentUserId();
-        verify(accountService, times(1)).findUsersAccounts(testUser.getId());
+        verify(userService).getCurrentUserId();
+        verify(accountService).findUsersAccounts(testUser.getId());
     }
 
     @Test
@@ -106,7 +108,42 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.id").value(1L))
                 .andExpect(jsonPath("$.name").value("Test Account 1"));
 
-        verify(accountService, times(1)).findById(1L);
-        verify(accountService, times(1)).convertToDTO(account1);
+        verify(accountService).findById(1L);
+        verify(accountService).convertToDTO(account1);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveAccount_successfulSave_shouldRedirectToAccount() throws Exception {
+        // Arrange
+        doNothing().when(accountService).saveAccount(accountDTO);
+
+        // Act & Assert
+        mockMvc.perform(post("/accounts/save")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .flashAttr("account", accountDTO))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/accounts"));
+
+        verify(accountService).saveAccount(accountDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveAccount_invalidData_shouldReturnAccountListView() throws Exception {
+        // Arrange
+        accountDTO.setAccountType(null);
+
+        // Act & Assert
+        mockMvc.perform(post("/accounts/save")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .flashAttr("account", accountDTO))
+                .andExpect(status().isOk())
+                .andExpect(view().name("accounts/list"))
+                .andExpect(model().attributeHasFieldErrors("account", "accountType"));
+
+        verify(accountService, never()).saveAccount(accountDTO);
     }
 }
