@@ -152,4 +152,19 @@ public class FinancialGoalControllerTest {
 
         verify(financialGoalService).saveFinancialGoal(financialGoalDTO);
     }
+
+    @Test
+    @WithMockUser
+    public void deleteFinancialGoal_successfulDeletion_shouldRedirectToFinancialGoals() throws Exception {
+        // Arrange
+        doNothing().when(financialGoalService).deleteById(financialGoal.getId());
+
+        // Act & Assert
+        mockMvc.perform(get("/financialGoals/delete")
+                        .param("financialGoalId", String.valueOf(financialGoal.getId())))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/financialGoals"));
+
+        verify(financialGoalService).deleteById(financialGoal.getId());
+    }
 }
