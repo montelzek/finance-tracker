@@ -34,7 +34,7 @@ public class AccountServiceImplTest {
     private UserService userService;
 
     @InjectMocks
-    AccountServiceImpl accountService;
+    private AccountServiceImpl accountService;
 
     private Account account;
     private AccountDTO accountDTO;
@@ -78,7 +78,7 @@ public class AccountServiceImplTest {
     }
 
     @Test
-    public void findUsersAccounts_nonExistingUserId_shouldReturnAccountsList() {
+    public void findUsersAccounts_nonExistingUserId_shouldReturnEmptyAccountsList() {
         // Arrange
         when(accountRepository.findByUserIdOrderByCreatedAt(-1L)).thenReturn(List.of());
 
