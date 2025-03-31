@@ -3,10 +3,8 @@ package com.montelzek.moneytrack.controller;
 import com.montelzek.moneytrack.dto.FinancialGoalDTO;
 import com.montelzek.moneytrack.model.FinancialGoal;
 import com.montelzek.moneytrack.model.User;
-import com.montelzek.moneytrack.service.AccountService;
 import com.montelzek.moneytrack.service.FinancialGoalService;
 import com.montelzek.moneytrack.service.UserService;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,12 +17,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(FinancialGoalController.class)
@@ -99,5 +97,59 @@ public class FinancialGoalControllerTest {
 
         verify(financialGoalService).findById(1L);
         verify(financialGoalService).convertToDTO(financialGoal);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveFinancialGoal_successfulSave_shouldRedirectToFinancialGoal() throws Exception {
+        // Arrange
+        doNothing().when(financialGoalService).saveFinancialGoal(financialGoalDTO);
+
+        // Act & Assert
+        mockMvc.perform(post("/financialGoals/save")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .flashAttr("financialGoal", financialGoalDTO))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/financialGoals"));
+
+        verify(financialGoalService).saveFinancialGoal(financialGoalDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveFinancialGoal_invalidData_shouldReturnFinancialGoalListView() throws Exception {
+        // Arrange
+        financialGoalDTO.setTargetAmount(null);
+
+        // Act & Assert
+        mockMvc.perform(post("/financialGoals/save")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .flashAttr("financialGoal", financialGoalDTO))
+                .andExpect(status().isOk())
+                .andExpect(view().name("financialGoals/list"))
+                .andExpect(model().attributeHasFieldErrors("financialGoal", "targetAmount"));
+
+        verify(financialGoalService, never()).saveFinancialGoal(financialGoalDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveFinancialGoal_illegalArgumentException_shouldReturnListWithViewWithError() throws Exception{
+        // Arrange
+        doThrow(new IllegalArgumentException()).when(financialGoalService).saveFinancialGoal(financialGoalDTO);
+
+        // Act & Arrange
+        mockMvc.perform(post("/financialGoals/save")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                        .flashAttr("financialGoal", financialGoalDTO))
+                .andExpect(status().isOk())
+                .andExpect(view().name("financialGoals/list"))
+                .andExpect(model().hasErrors())
+                .andExpect(model().attributeHasErrors("financialGoal"));
+
+        verify(financialGoalService).saveFinancialGoal(financialGoalDTO);
     }
 }
