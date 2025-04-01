@@ -14,4 +14,8 @@ public interface UserService {
     List<User> findAll();
 
     void deleteById(Long id);
+
+    User save(User user);
+
+    Boolean existsByEmail(String email);
 }
