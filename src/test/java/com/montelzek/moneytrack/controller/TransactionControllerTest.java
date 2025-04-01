@@ -1,10 +1,7 @@
 package com.montelzek.moneytrack.controller;
 
 import com.montelzek.moneytrack.dto.TransactionDTO;
-import com.montelzek.moneytrack.model.Account;
-import com.montelzek.moneytrack.model.Category;
-import com.montelzek.moneytrack.model.Transaction;
-import com.montelzek.moneytrack.model.User;
+import com.montelzek.moneytrack.model.*;
 import com.montelzek.moneytrack.service.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +22,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -117,5 +115,92 @@ public class TransactionControllerTest {
         verify(categoryService).findByType(eq("FINANCIAL_GOAL"));
         verify(accountService).findUsersAccounts(1L);
         verify(financialGoalService).findUsersFinancialGoals(1L);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveTransaction_dataIsValidAndIdIsNull_shouldCreateTransaction() throws Exception {
+        // Arrange
+        String source = "dashboard";
+        transactionDTO.setId(null);
+        doNothing().when(transactionService).createTransaction(transactionDTO);
+
+        // Act & Assert
+        mockMvc.perform(post("/transactions/save")
+                .flashAttr("transaction", transactionDTO)
+                .param("source", source)
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + source));
+
+        verify(transactionService).createTransaction(transactionDTO);
+        verify(transactionService, never()).updateTransaction(transactionDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveTransaction_dataIsValidAndIdIsNotNull_shouldUpdateTransaction() throws Exception {
+        // Arrange
+        String source = "transactions";
+        doNothing().when(transactionService).updateTransaction(transactionDTO);
+
+        // Act & Assert
+        mockMvc.perform(post("/transactions/save")
+                        .flashAttr("transaction", transactionDTO)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + source));
+
+        verify(transactionService).updateTransaction(transactionDTO);
+        verify(transactionService, never()).createTransaction(transactionDTO);
+    }
+
+    @Test
+    @WithMockUser
+    public void saveTransaction_invalidData_shouldRedirect() throws Exception{
+        // Arrange
+        String source = "transactions";
+        transactionDTO.setAmount(null);
+
+        // Act & Arrange
+        mockMvc.perform(post("/transactions/save")
+                .flashAttr("transaction", transactionDTO)
+                .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + source))
+                .andExpect(flash().attributeExists("org.springframework.validation.BindingResult.transaction"))
+                .andExpect(flash().attributeExists("transaction"));
+
+        verify(transactionService, never()).createTransaction(any());
+        verify(transactionService, never()).updateTransaction(any());
+    }
+
+    @Test
+    @WithMockUser
+    public void saveTransaction_serviceThrowsIllegalArgumentException_shouldRedirect() throws Exception{
+        // Arrange
+        String source = "transactions";
+        String errorMessage = "Error Message";
+
+        TransactionDTO dtoForCreate = TransactionDTO.builder()
+                .categoryId(category.getId())
+                .accountId(account.getId())
+                .amount(BigDecimal.valueOf(150))
+                .date(LocalDate.now())
+                .build();
+
+        doThrow(new IllegalArgumentException(errorMessage))
+                .when(transactionService).createTransaction(dtoForCreate);
+
+        // Act & Assert
+        mockMvc.perform(post("/transactions/save")
+                        .flashAttr("transaction", dtoForCreate)
+                        .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/" + source))
+                .andExpect(flash().attributeExists("error"));
+
+        verify(transactionService).createTransaction(dtoForCreate);
+        verify(transactionService, never()).updateTransaction(any());
     }
 }
