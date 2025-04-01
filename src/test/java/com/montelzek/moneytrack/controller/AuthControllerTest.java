@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -127,5 +126,40 @@ public class AuthControllerTest {
         verify(passwordEncoder).encode(userRegisterDTO.getPassword());
         verify(roleService).findByName(Role.ERole.ROLE_USER);
         verify(userService).save(any(User.class));
+    }
+
+    @Test
+    public void saveUser_existingEmail_shouldNotRegisterUser() throws Exception{
+        // Arrange
+        when(userService.existsByEmail(userRegisterDTO.getEmail())).thenReturn(true);
+
+        // Act & Assert
+        mockMvc.perform(post("/register")
+                .flashAttr("user", userRegisterDTO)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register"))
+                .andExpect(model().attributeHasFieldErrors("user", "email"));
+
+        verify(userService).existsByEmail(userRegisterDTO.getEmail());
+        verify(userService, never()).save(any(User.class));
+    }
+
+    @Test
+    public void saveUser_invalidData_shouldNotRegisterUser() throws Exception {
+        // Arrange
+        userRegisterDTO.setEmail(null);
+
+        // Act & Assert
+        mockMvc.perform(post("/register")
+                .flashAttr("user", userRegisterDTO)
+                .with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("register"))
+                .andExpect(model().hasErrors())
+                .andExpect(model().attributeHasFieldErrors("user", "email"));
+
+        verify(userService, never()).existsByEmail(anyString());
+        verify(userService, never()).save(any(User.class));
     }
 }
