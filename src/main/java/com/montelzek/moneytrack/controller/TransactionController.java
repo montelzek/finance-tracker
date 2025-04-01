@@ -10,12 +10,14 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -43,11 +45,21 @@ public class TransactionController {
     @GetMapping
     public String listTransactions(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size,
+                                   @RequestParam(required = false, defaultValue = "date") String sortField,
+                                   @RequestParam(required = false, defaultValue = "desc") String sortDir,
+                                   @RequestParam(required = false) Long filterAccountId,
+                                   @RequestParam(required = false) Long filterCategoryId,
+                                   @RequestParam(required = false) String filterType,
+                                   @RequestParam(required = false) LocalDate filterStartDate,
+                                   @RequestParam(required = false) LocalDate filterEndDate,
                                    Model model) {
 
-        Long id = userService.getCurrentUserId();
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Transaction> transactionPage = transactionService.findAccountsTransactions(id, pageable);
+        Long userId = userService.getCurrentUserId();
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Transaction> transactionPage = transactionService.findTransactions(userId, filterAccountId,
+                filterCategoryId, filterType, filterStartDate, filterEndDate, pageable);
 
         TransactionDTO transactionDTO = new TransactionDTO();
         model.addAttribute("transaction", transactionDTO);
