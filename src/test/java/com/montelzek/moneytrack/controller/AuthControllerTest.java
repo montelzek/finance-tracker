@@ -13,10 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -24,7 +26,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
@@ -161,5 +162,59 @@ public class AuthControllerTest {
 
         verify(userService, never()).existsByEmail(anyString());
         verify(userService, never()).save(any(User.class));
+    }
+
+    @Test
+    @WithMockUser
+    public void dashboard_shouldShowDashboard() throws Exception{
+        // Arrange
+        Long userId = testUser.getId();
+        when(userService.getCurrentUserId()).thenReturn(userId);
+        when(userService.findById(userId)).thenReturn(Optional.of(testUser));
+        when(categoryService.findByType(anyString())).thenReturn(Collections.emptyList());
+        when(accountService.findUsersAccounts(userId)).thenReturn(Collections.emptyList());
+        when(accountService.getTotalBalance(userId)).thenReturn(BigDecimal.TEN);
+        when(transactionService.getIncomeFromLastMonth(userId)).thenReturn(BigDecimal.valueOf(100));
+        when(transactionService.getExpensesFromLastMonth(userId)).thenReturn(BigDecimal.valueOf(50));
+        when(transactionService.getExpensesByCategoryFromLastMonth(userId)).thenReturn(Collections.singletonMap("Food", BigDecimal.valueOf(25)));
+        when(transactionService.getTransactionsFromLastSixMonths(userId)).thenReturn(Collections.emptyMap());
+        when(transactionService.getRecentTransactions(userId)).thenReturn(Collections.emptyList());
+        when(exchangeRateService.getRates()).thenReturn(Collections.singletonMap("USD", BigDecimal.ONE));
+        when(budgetService.findActiveBudgets(eq(userId), any(LocalDate.class))).thenReturn(Collections.emptyList());
+        when(financialGoalService.findTop3Goals(userId)).thenReturn(Collections.emptyList());
+
+        // Act & Assert
+        mockMvc.perform(get("/dashboard"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("dashboard"))
+                .andExpect(model().attributeExists(
+                        "transaction", "incomeCategories", "expenseCategories",
+                        "financialGoalCategories", "accounts", "user", "totalBalance",
+                        "incomeFromLastMonth", "expensesFromLastMonth", "expensesByCategory",
+                        "transactionsLastSixMonths", "recentTransactions", "rates",
+                        "activeBudgets", "financialGoals"
+                ));
+
+        verify(userService).getCurrentUserId();
+        verify(userService).findById(userId);
+        verify(categoryService, times(3)).findByType(anyString());
+        verify(accountService).findUsersAccounts(userId);
+        verify(accountService).getTotalBalance(userId);
+        verify(transactionService).getIncomeFromLastMonth(userId);
+        verify(transactionService).getExpensesFromLastMonth(userId);
+        verify(transactionService).getExpensesByCategoryFromLastMonth(userId);
+        verify(transactionService).getTransactionsFromLastSixMonths(userId);
+        verify(transactionService).getRecentTransactions(userId);
+        verify(exchangeRateService).getRates();
+        verify(budgetService).findActiveBudgets(eq(userId), any(LocalDate.class));
+        verify(financialGoalService).findTop3Goals(userId);
+    }
+
+    @Test
+    @WithMockUser
+    void showAccessDenied_shouldShowAccessDeniedPage() throws Exception {
+        mockMvc.perform(get("/access-denied"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("access-denied"));
     }
 }
