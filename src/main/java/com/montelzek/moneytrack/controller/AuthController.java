@@ -3,8 +3,6 @@ package com.montelzek.moneytrack.controller;
 import com.montelzek.moneytrack.dto.TransactionDTO;
 import com.montelzek.moneytrack.dto.UserRegisterDTO;
 import com.montelzek.moneytrack.model.*;
-import com.montelzek.moneytrack.repository.RoleRepository;
-import com.montelzek.moneytrack.repository.UserRepository;
 import com.montelzek.moneytrack.service.*;
 import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,15 +13,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
     private final AccountService accountService;
@@ -33,17 +32,16 @@ public class AuthController {
     private final FinancialGoalService financialGoalService;
     private final CategoryService categoryService;
 
-    public AuthController(UserRepository userRepository,
-                          RoleRepository roleRepository,
+    public AuthController(RoleService roleService,
                           PasswordEncoder passwordEncoder,
                           UserService userService,
                           AccountService accountService,
                           TransactionService transactionService,
                           ExchangeRateService exchangeRateService,
                           BudgetService budgetService,
-                          FinancialGoalService financialGoalService, CategoryService categoryService) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
+                          FinancialGoalService financialGoalService,
+                          CategoryService categoryService) {
+        this.roleService = roleService;
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
         this.accountService = accountService;
@@ -55,7 +53,7 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String login() {
+    public String showLoginPage() {
         return "login";
     }
 
@@ -71,7 +69,7 @@ public class AuthController {
             return "register";
         }
 
-        if (userRepository.existsByEmail(userRegisterDTO.getEmail())) {
+        if (userService.existsByEmail(userRegisterDTO.getEmail())) {
             result.rejectValue("email", "error.email", "Email already exists");
             return "register";
         }
@@ -83,11 +81,11 @@ public class AuthController {
                 userRegisterDTO.getLastName()
         );
 
-        Role userRole = roleRepository.findByName(Role.ERole.ROLE_USER)
+        Role userRole = roleService.findByName(Role.ERole.ROLE_USER)
                 .orElseThrow(() -> new RuntimeException("Role not found."));
         user.setRoles(Collections.singleton(userRole));
 
-        userRepository.save(user);
+        userService.save(user);
 
         return "redirect:/login?registered=true";
     }
@@ -104,25 +102,32 @@ public class AuthController {
         List<Category> expenseCategories = categoryService.findByType("EXPENSE");
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(userId);
-        List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(userId);
+        BigDecimal totalBalance = accountService.getTotalBalance(userId);
+        BigDecimal incomeFromLastMonth = transactionService.getIncomeFromLastMonth(userId);
+        BigDecimal expenseFromLastMonth = transactionService.getExpensesFromLastMonth(userId);
+        Map<String, BigDecimal> expensesByCategory = transactionService.getExpensesByCategoryFromLastMonth(userId);
+        Map<String, Map<String, BigDecimal>> transactionsLastSixMonths = transactionService.getTransactionsFromLastSixMonths(userId);
+        List<Transaction> recentTransactions = transactionService.getRecentTransactions(userId);
+        Map<String, BigDecimal> rates = exchangeRateService.getRates();
+        List<Budget> activeBudgets = budgetService.findActiveBudgets(userId, today);
+        List<FinancialGoal> financialGoals = financialGoalService.findTop3Goals(userId);
+
 
         model.addAttribute("transaction", new TransactionDTO());
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
         model.addAttribute("financialGoalCategories", financialGoalCategories);
         model.addAttribute("accounts", accounts);
-        model.addAttribute("financialGoals", financialGoals);
-
         model.addAttribute("user", user);
-        model.addAttribute("totalBalance", accountService.getTotalBalance(userId));
-        model.addAttribute("incomeFromLastMonth", transactionService.getIncomeFromLastMonth(userId));
-        model.addAttribute("expensesFromLastMonth", transactionService.getExpensesFromLastMonth(userId));
-        model.addAttribute("expensesByCategory", transactionService.getExpensesByCategoryFromLastMonth(userId));
-        model.addAttribute("transactionsLastSixMonths", transactionService.getTransactionsFromLastSixMonths(userId));
-        model.addAttribute("recentTransactions", transactionService.getRecentTransactions(userId));
-        model.addAttribute("rates", exchangeRateService.getRates());
-        model.addAttribute("activeBudgets", budgetService.findActiveBudgets(userId, today));
-        model.addAttribute("financialGoals", financialGoalService.findTop3Goals(userId));
+        model.addAttribute("totalBalance", totalBalance);
+        model.addAttribute("incomeFromLastMonth", incomeFromLastMonth);
+        model.addAttribute("expensesFromLastMonth", expenseFromLastMonth);
+        model.addAttribute("expensesByCategory", expensesByCategory);
+        model.addAttribute("transactionsLastSixMonths", transactionsLastSixMonths);
+        model.addAttribute("recentTransactions", recentTransactions);
+        model.addAttribute("rates", rates);
+        model.addAttribute("activeBudgets", activeBudgets);
+        model.addAttribute("financialGoals", financialGoals);
 
         return "dashboard";
     }
