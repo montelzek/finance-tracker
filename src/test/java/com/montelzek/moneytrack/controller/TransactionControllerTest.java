@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -202,5 +203,39 @@ public class TransactionControllerTest {
 
         verify(transactionService).createTransaction(dtoForCreate);
         verify(transactionService, never()).updateTransaction(any());
+    }
+
+    @Test
+    @WithMockUser
+    public void deleteTransaction_successfulDeletion_shouldRedirectToTransactions() throws Exception {
+        // Arrange
+        doNothing().when(transactionService).deleteById(transaction.getId());
+
+        // Act & Assert
+        mockMvc.perform(get("/transactions/delete")
+                        .param("transactionId", String.valueOf(transaction.getId())))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/transactions"));
+
+        verify(transactionService).deleteById(transaction.getId());
+    }
+
+    @Test
+    @WithMockUser
+    public void getTransactionForEdit_shouldReturnTransactionDTOasJson() throws Exception {
+        // Arrange
+        when(transactionService.findById(1L)).thenReturn(transaction);
+        when(transactionService.convertToDTO(transaction)).thenReturn(transactionDTO);
+
+        // Act & Assert
+        mockMvc.perform(get("/transactions/edit/{id}", 1L)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.amount").value(BigDecimal.valueOf(200)));
+
+        verify(transactionService).findById(1L);
+        verify(transactionService).convertToDTO(transaction);
     }
 }
