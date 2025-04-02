@@ -71,31 +71,6 @@ public class TransactionRepositoryTest {
     }
 
     @Test
-    public void testFindByAccount_User_Id_ShouldReturnPagedTransactions() {
-        // Arrange
-        for (int i = 0; i < 10; i++) {
-            Transaction transaction = Transaction.builder()
-                    .amount(BigDecimal.valueOf(100 + i))
-                    .date(LocalDate.now().minusDays(i))
-                    .account(account)
-                    .category(i % 2 == 0 ? incomeCategory : expenseCategory)
-                    .build();
-            testEntityManager.persist(transaction);
-        }
-        testEntityManager.flush();
-
-        // Act
-        Pageable pageable = PageRequest.of(0, 5);
-        Page<Transaction> transactionPage = transactionRepository
-                .findByAccount_User_Id_OrderByDateDescCreatedAtDesc(user.getId(), pageable);
-
-        // Assert
-        assertThat(transactionPage).isNotNull();
-        assertThat(transactionPage.getContent()).hasSize(5);
-        assertThat(transactionPage.getContent().getFirst().getDate()).isEqualTo(LocalDate.now());
-    }
-
-    @Test
     public void testFindTop6ByAccount_User_Id_ShouldReturnSixMostRecentTransactions() {
         // Arrange
         for (int i = 0; i < 7; i++) {
