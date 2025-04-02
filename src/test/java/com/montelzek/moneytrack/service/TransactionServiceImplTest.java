@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,8 +24,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,40 +83,43 @@ public class TransactionServiceImplTest {
     }
 
     @Test
-    public void findAccountsTransactions_transactionsExists_shouldReturnPageOfTransactions() {
+    public void findAccountsTransactions_noFilters_shouldReturnPageOfTransactions() {
         // Arrange
         Long userId = 1L;
         Pageable pageable = PageRequest.of(0, 10);
         List<Transaction> transactions = List.of(new Transaction(), new Transaction());
         Page<Transaction> expectedPage = new PageImpl<>(transactions, pageable, transactions.size());
 
-        when(transactionRepository.findByAccount_User_Id_OrderByDateDescCreatedAtDesc(anyLong(), any(Pageable.class)))
+        when(transactionRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(expectedPage);
 
         // Act
-        Page<Transaction> result = transactionService.findAccountsTransactions(userId, pageable);
+        Page<Transaction> result = transactionService.findTransactions(
+                userId, null, null, null, null, null, pageable);
 
         // Assert
         assertThat(result).isEqualTo(expectedPage);
         assertThat(result.getContent()).hasSize(2);
-        verify(transactionRepository).findByAccount_User_Id_OrderByDateDescCreatedAtDesc(userId, pageable);
+        verify(transactionRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
-    public void findAccountsTransactions_transactionsNotExists_shouldReturnEmptyPage() {
+    public void findAccountsTransactions_noFilters_transactionsNotExists_shouldReturnEmptyPage() {
         // Arrange
+        Long userId = 1L;
         Pageable pageable = PageRequest.of(0, 10);
         Page<Transaction> expectedPage = Page.empty();
 
-        when(transactionRepository.findByAccount_User_Id_OrderByDateDescCreatedAtDesc(anyLong(), any(Pageable.class)))
+        when(transactionRepository.findAll(any(Specification.class), eq(pageable)))
                 .thenReturn(expectedPage);
 
         // Act
-        Page<Transaction> result = transactionService.findAccountsTransactions(user.getId(), pageable);
+        Page<Transaction> result = transactionService.findTransactions(
+                userId, null, null, null, null, null, pageable);
 
         // Assert
         assertThat(result).isEmpty();
-        verify(transactionRepository).findByAccount_User_Id_OrderByDateDescCreatedAtDesc(user.getId(), pageable);
+        verify(transactionRepository).findAll(any(Specification.class), eq(pageable));
     }
 
     @Test
