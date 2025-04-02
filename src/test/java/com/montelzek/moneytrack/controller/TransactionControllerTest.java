@@ -9,10 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -22,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -84,16 +82,19 @@ public class TransactionControllerTest {
     @WithMockUser
     public void listTransactions_shouldReturnListViewWithPagedTransactions() throws Exception {
         // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
+        Sort defaultSort = Sort.by("date").descending();
+        Pageable pageable = PageRequest.of(0, 10, defaultSort);
         Page<Transaction> transactionPage = new PageImpl<>(Collections.singletonList(transaction), pageable, 1);
 
         when(userService.getCurrentUserId()).thenReturn(1L);
-        when(transactionService.findAccountsTransactions(1L, pageable)).thenReturn(transactionPage);
         when(categoryService.findByType("INCOME")).thenReturn(Collections.singletonList(category));
         when(categoryService.findByType("EXPENSE")).thenReturn(Collections.singletonList(category));
         when(categoryService.findByType("FINANCIAL_GOAL")).thenReturn(Collections.singletonList(category));
         when(accountService.findUsersAccounts(1L)).thenReturn(Collections.singletonList(account));
         when(financialGoalService.findUsersFinancialGoals(1L)).thenReturn(Collections.emptyList());
+        when(categoryService.findAll()).thenReturn(Collections.singletonList(category));
+        when(transactionService.findTransactions(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(), eq(pageable)))
+                .thenReturn(transactionPage);
 
         // Act & Assert
         mockMvc.perform(get("/transactions")
@@ -107,15 +108,24 @@ public class TransactionControllerTest {
                 .andExpect(model().attributeExists("expenseCategories"))
                 .andExpect(model().attributeExists("financialGoalCategories"))
                 .andExpect(model().attributeExists("financialGoals"))
-                .andExpect(model().attributeExists("accounts"));
+                .andExpect(model().attributeExists("accounts"))
+                .andExpect(model().attributeExists("sortField"))
+                .andExpect(model().attributeExists("sortDir"))
+                .andExpect(model().attributeExists("reverseSortDir"))
+                .andExpect(model().attribute("filterAccountId", nullValue()))
+                .andExpect(model().attribute("filterCategoryId", nullValue()))
+                .andExpect(model().attribute("filterType", nullValue()))
+                .andExpect(model().attribute("filterStartDate", nullValue()))
+                .andExpect(model().attribute("filterEndDate", nullValue()));
 
         verify(userService, times(2)).getCurrentUserId();
-        verify(transactionService).findAccountsTransactions(1L, pageable);
         verify(categoryService).findByType(eq("INCOME"));
         verify(categoryService).findByType(eq("EXPENSE"));
         verify(categoryService).findByType(eq("FINANCIAL_GOAL"));
-        verify(accountService).findUsersAccounts(1L);
-        verify(financialGoalService).findUsersFinancialGoals(1L);
+        verify(categoryService).findAll();
+        verify(accountService).findUsersAccounts(eq(1L));
+        verify(financialGoalService).findUsersFinancialGoals(eq(1L));
+        verify(transactionService).findTransactions(eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(), eq(pageable));
     }
 
     @Test
