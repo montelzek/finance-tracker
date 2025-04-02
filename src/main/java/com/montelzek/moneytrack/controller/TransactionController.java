@@ -64,6 +64,16 @@ public class TransactionController {
         TransactionDTO transactionDTO = new TransactionDTO();
         model.addAttribute("transaction", transactionDTO);
         model.addAttribute("transactionsPage", transactionPage);
+
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("filterAccountId", filterAccountId);
+        model.addAttribute("filterCategoryId", filterCategoryId);
+        model.addAttribute("filterType", filterType);
+        model.addAttribute("filterStartDate", filterStartDate);
+        model.addAttribute("filterEndDate", filterEndDate);
+
         prepareTransactionModel(model);
 
         return "transactions/list";
@@ -117,11 +127,13 @@ public class TransactionController {
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
+        List<Category> allCategories = categoryService.findAll();
 
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
         model.addAttribute("accounts", accounts);
         model.addAttribute("financialGoals", financialGoals);
         model.addAttribute("financialGoalCategories", financialGoalCategories);
+        model.addAttribute("allCategories", allCategories);
     }
 }
