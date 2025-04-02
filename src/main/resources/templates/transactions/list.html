@@ -22,6 +22,11 @@
         .nav-pills .nav-link.active {
             background-color: #cdcdce;
         }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -156,7 +161,15 @@
                     <tr>
                         <th>Transaction</th>
                         <th>Description</th>
-                        <th>Date</th>
+                        <th>
+                            <a th:href="@{/transactions(size=${transactionsPage.size}, page=${transactionsPage.number},
+                                                sortField='date', sortDir=${sortField == 'date' ? reverseSortDir : 'asc'},
+                                                filterAccountId=${filterAccountId}, filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                                filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">
+                                Date
+                                <i th:if="${sortField == 'date'}" th:class="${sortDir == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                            </a>
+                        </th>
                         <th>Amount</th>
                     </tr>
                     </thead>
@@ -202,28 +215,40 @@
                 <div th:if="${transactionsPage.totalPages > 1}" class="d-flex justify-content-center mt-4">
                     <ul class="pagination">
                         <li class="page-item" th:classappend="${transactionsPage.first} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=0,
-                             size=${transactionsPage.size})}">First</a>
+                            <a class="page-link" th:href="@{/transactions(page=0, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">First</a>
                         </li>
                         <li class="page-item" th:classappend="${transactionsPage.first} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number - 1},
-                             size=${transactionsPage.size})}">Previous</a>
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number - 1}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">Previous</a>
                         </li>
 
                         <li th:each="pageNum : ${#numbers.sequence(0, transactionsPage.totalPages - 1)}"
                             class="page-item" th:classappend="${pageNum == transactionsPage.number} ? 'active'">
                             <a class="page-link"
-                               th:href="@{/transactions(page=${pageNum}, size=${transactionsPage.size})}"
-                               th:text="${pageNum + 1}"></a>
+                               th:href="@{/transactions(page=${pageNum}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}"
+                               th:text="${pageNum + 1}">
+                            </a>
                         </li>
 
                         <li class="page-item" th:classappend="${transactionsPage.last} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number+1},
-                             size=${transactionsPage.size})}">Next</a>
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number + 1}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">Next</a>
                         </li>
                         <li class="page-item" th:classappend="${transactionsPage.last} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.totalPages - 1},
-                             size=${transactionsPage.size})}">Last</a>
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.totalPages - 1}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">Last</a>
                         </li>
                     </ul>
                 </div>
@@ -580,7 +605,10 @@
 <script src="/js/edit-transaction.js"></script>
 <script>
     function changePageSize(select) {
-        window.location.href = `/transactions?page=0&size=${select.value}`;
+        const url = new URL(window.location.href);
+        url.searchParams.set('size', select.value);
+        url.searchParams.set('page', '0');
+        window.location.href = url.toString();
     }
 </script>
 </body>
