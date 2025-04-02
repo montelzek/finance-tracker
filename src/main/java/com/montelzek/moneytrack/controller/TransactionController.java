@@ -10,12 +10,14 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Controller
@@ -43,15 +45,35 @@ public class TransactionController {
     @GetMapping
     public String listTransactions(@RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size,
+                                   @RequestParam(required = false, defaultValue = "date") String sortField,
+                                   @RequestParam(required = false, defaultValue = "desc") String sortDir,
+                                   @RequestParam(required = false) Long filterAccountId,
+                                   @RequestParam(required = false) Long filterCategoryId,
+                                   @RequestParam(required = false) String filterType,
+                                   @RequestParam(required = false) LocalDate filterStartDate,
+                                   @RequestParam(required = false) LocalDate filterEndDate,
                                    Model model) {
 
-        Long id = userService.getCurrentUserId();
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Transaction> transactionPage = transactionService.findAccountsTransactions(id, pageable);
+        Long userId = userService.getCurrentUserId();
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ?
+                Sort.by(sortField).ascending() : Sort.by(sortField).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Transaction> transactionPage = transactionService.findTransactions(userId, filterAccountId,
+                filterCategoryId, filterType, filterStartDate, filterEndDate, pageable);
 
         TransactionDTO transactionDTO = new TransactionDTO();
         model.addAttribute("transaction", transactionDTO);
         model.addAttribute("transactionsPage", transactionPage);
+
+        model.addAttribute("sortField", sortField);
+        model.addAttribute("sortDir", sortDir);
+        model.addAttribute("reverseSortDir", sortDir.equals("asc") ? "desc" : "asc");
+        model.addAttribute("filterAccountId", filterAccountId);
+        model.addAttribute("filterCategoryId", filterCategoryId);
+        model.addAttribute("filterType", filterType);
+        model.addAttribute("filterStartDate", filterStartDate);
+        model.addAttribute("filterEndDate", filterEndDate);
+
         prepareTransactionModel(model);
 
         return "transactions/list";
@@ -105,11 +127,13 @@ public class TransactionController {
         List<Category> financialGoalCategories = categoryService.findByType("FINANCIAL_GOAL");
         List<Account> accounts = accountService.findUsersAccounts(id);
         List<FinancialGoal> financialGoals = financialGoalService.findUsersFinancialGoals(id);
+        List<Category> allCategories = categoryService.findAll();
 
         model.addAttribute("incomeCategories", incomeCategories);
         model.addAttribute("expenseCategories", expenseCategories);
         model.addAttribute("accounts", accounts);
         model.addAttribute("financialGoals", financialGoals);
         model.addAttribute("financialGoalCategories", financialGoalCategories);
+        model.addAttribute("allCategories", allCategories);
     }
 }

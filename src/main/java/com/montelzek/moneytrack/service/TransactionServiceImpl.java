@@ -3,8 +3,10 @@ package com.montelzek.moneytrack.service;
 import com.montelzek.moneytrack.dto.TransactionDTO;
 import com.montelzek.moneytrack.model.*;
 import com.montelzek.moneytrack.repository.TransactionRepository;
+import com.montelzek.moneytrack.util.TransactionSpecification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,8 +41,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public Page<Transaction> findAccountsTransactions(Long id, Pageable pageable) {
-        return transactionRepository.findByAccount_User_Id_OrderByDateDescCreatedAtDesc(id, pageable);
+    public Page<Transaction> findTransactions(Long userId, Long accountId, Long categoryId, String categoryType,
+                                              LocalDate startDate, LocalDate endDate, Pageable pageable) {
+        Specification<Transaction> specification = TransactionSpecification.createSpecification(
+                userId, accountId, categoryId, categoryType, startDate, endDate
+        );
+        return transactionRepository.findAll(specification, pageable);
     }
 
     @Override

@@ -6,4 +6,5 @@ import java.util.List;
 public interface CategoryService {
     List<Category> findByType(String type);
     Category findById(Integer id);
+    List<Category> findAll();
 }

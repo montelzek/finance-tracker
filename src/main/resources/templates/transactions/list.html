@@ -22,6 +22,11 @@
         .nav-pills .nav-link.active {
             background-color: #cdcdce;
         }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -71,19 +76,83 @@
         <div class="col-md-3 col-lg-2"></div>
 
         <div class="col-md-9 col-lg-10 main-content">
-            <div class="d-flex gap-4 align-items-center mb-4">
-                <h2 class="mb-0">Transaction list</h2>
-                <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingTransactionModal">
-                    <i class="bi bi-plus-lg me-2"></i>
-                    Add transaction
-                </button>
-                <div>
-                    <select class="form-select" id="pageSize" onchange="changePageSize(this)">
-                        <option value="5" th:selected="${transactionsPage.size} == 5">5 per page</option>
-                        <option value="10" th:selected="${transactionsPage.size} == 10">10 per page</option>
-                        <option value="15" th:selected="${transactionsPage.size} == 15">15 per page</option>
-                        <option value="20" th:selected="${transactionsPage.size} == 20">20 per page</option>
-                    </select>
+            <div class="d-flex flex-wrap align-items-center mb-4 gap-3">
+                <h2 class="mb-0 me-2">Transaction list</h2>
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#addingTransactionModal">
+                        <i class="bi bi-plus-lg me-2"></i>
+                        Add transaction
+                    </button>
+                    <button class="btn btn-outline-dark" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+                        <i class="bi bi-funnel me-1"></i>
+                        Filters
+                    </button>
+                    <div class="d-flex align-items-center">
+                        <label for="pageSize" class="form-label mb-0 me-2 text-nowrap">Show:</label>
+                        <select class="form-select form-select-sm" id="pageSize" onchange="changePageSize(this)" style="width: auto;">
+                            <option value="5" th:selected="${transactionsPage.size} == 5">5</option>
+                            <option value="10" th:selected="${transactionsPage.size} == 10">10</option>
+                            <option value="15" th:selected="${transactionsPage.size} == 15">15</option>
+                            <option value="20" th:selected="${transactionsPage.size} == 20">20</option>
+                        </select>
+                        <span class="ms-2 text-nowrap">per page</span>
+                    </div>
+
+                </div>
+            </div>
+            <div class="collapse mb-4" id="filterCollapse">
+                <div class="card card-body">
+                    <form th:action="@{/transactions}" method="get" class="row g-3 align-items-end">
+                        <input type="hidden" name="size" th:value="${transactionsPage.size}">
+                        <input type="hidden" name="sortField" th:value="${sortField}">
+                        <input type="hidden" name="sortDir" th:value="${sortDir}">
+
+                        <div class="col-md-4 col-lg-2">
+                            <label for="filterAccount" class="form-label">Account</label>
+                            <select id="filterAccount" name="filterAccountId" class="form-select form-select-sm">
+                                <option value="">All Accounts</option>
+                                <option th:each="tempAccount : ${accounts}"
+                                        th:value="${tempAccount.id}"
+                                        th:text="${tempAccount.name}"
+                                        th:selected="${tempAccount.id == filterAccountId}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label for="filterCategory" class="form-label">Category</label>
+                            <select id="filterCategory" name="filterCategoryId" class="form-select form-select-sm">
+                                <option value="">All Categories</option>
+                                <option th:each="tempCategory : ${allCategories}"
+                                        th:value="${tempCategory.id}"
+                                        th:text="${tempCategory.name}"
+                                        th:selected="${tempCategory.id == filterCategoryId}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 col-lg-2">
+                            <label for="filterType" class="form-label">Type</label>
+                            <select id="filterType" name="filterType" class="form-select form-select-sm">
+                                <option value="">All Types</option>
+                                <option value="INCOME" th:selected="${'INCOME'.equals(filterType)}">Income</option>
+                                <option value="EXPENSE" th:selected="${'EXPENSE'.equals(filterType)}">Expense</option>
+                                <option value="FINANCIAL_GOAL" th:selected="${'FINANCIAL_GOAL'.equals(filterType)}">Financial Goal</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-lg-2">
+                            <label for="filterStartDate" class="form-label">From</label>
+                            <input type="date" id="filterStartDate" name="filterStartDate" class="form-control form-control-sm" th:value="${filterStartDate}">
+                        </div>
+                        <div class="col-md-6 col-lg-2">
+                            <label for="filterEndDate" class="form-label">To</label>
+                            <input type="date" id="filterEndDate" name="filterEndDate" class="form-control form-control-sm" th:value="${filterEndDate}">
+                        </div>
+
+                        <div class="col-12 col-lg-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">Apply</button>
+                            <a th:href="@{/transactions(size=${transactionsPage.size})}" class="btn btn-secondary btn-sm w-100">Clear</a>
+                        </div>
+                    </form>
                 </div>
             </div>
             <div class="table-responsive">
@@ -92,7 +161,15 @@
                     <tr>
                         <th>Transaction</th>
                         <th>Description</th>
-                        <th>Date</th>
+                        <th>
+                            <a th:href="@{/transactions(size=${transactionsPage.size}, page=${transactionsPage.number},
+                                                sortField='date', sortDir=${sortField == 'date' ? reverseSortDir : 'asc'},
+                                                filterAccountId=${filterAccountId}, filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                                filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">
+                                Date
+                                <i th:if="${sortField == 'date'}" th:class="${sortDir == 'asc' ? 'bi bi-arrow-up' : 'bi bi-arrow-down'}"></i>
+                            </a>
+                        </th>
                         <th>Amount</th>
                     </tr>
                     </thead>
@@ -138,28 +215,40 @@
                 <div th:if="${transactionsPage.totalPages > 1}" class="d-flex justify-content-center mt-4">
                     <ul class="pagination">
                         <li class="page-item" th:classappend="${transactionsPage.first} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=0,
-                             size=${transactionsPage.size})}">First</a>
+                            <a class="page-link" th:href="@{/transactions(page=0, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">First</a>
                         </li>
                         <li class="page-item" th:classappend="${transactionsPage.first} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number - 1},
-                             size=${transactionsPage.size})}">Previous</a>
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number - 1}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">Previous</a>
                         </li>
 
                         <li th:each="pageNum : ${#numbers.sequence(0, transactionsPage.totalPages - 1)}"
                             class="page-item" th:classappend="${pageNum == transactionsPage.number} ? 'active'">
                             <a class="page-link"
-                               th:href="@{/transactions(page=${pageNum}, size=${transactionsPage.size})}"
-                               th:text="${pageNum + 1}"></a>
+                               th:href="@{/transactions(page=${pageNum}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}"
+                               th:text="${pageNum + 1}">
+                            </a>
                         </li>
 
                         <li class="page-item" th:classappend="${transactionsPage.last} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number+1},
-                             size=${transactionsPage.size})}">Next</a>
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.number + 1}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">Next</a>
                         </li>
                         <li class="page-item" th:classappend="${transactionsPage.last} ? 'disabled'">
-                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.totalPages - 1},
-                             size=${transactionsPage.size})}">Last</a>
+                            <a class="page-link" th:href="@{/transactions(page=${transactionsPage.totalPages - 1}, size=${transactionsPage.size},
+                                 sortField=${sortField}, sortDir=${sortDir}, filterAccountId=${filterAccountId},
+                                 filterCategoryId=${filterCategoryId}, filterType=${filterType},
+                                 filterStartDate=${filterStartDate}, filterEndDate=${filterEndDate})}">Last</a>
                         </li>
                     </ul>
                 </div>
@@ -516,7 +605,10 @@
 <script src="/js/edit-transaction.js"></script>
 <script>
     function changePageSize(select) {
-        window.location.href = `/transactions?page=0&size=${select.value}`;
+        const url = new URL(window.location.href);
+        url.searchParams.set('size', select.value);
+        url.searchParams.set('page', '0');
+        window.location.href = url.toString();
     }
 </script>
 </body>

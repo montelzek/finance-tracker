@@ -6,12 +6,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
 public interface TransactionService {
 
-    Page<Transaction> findAccountsTransactions(Long id, Pageable pageable);
+    Page<Transaction> findTransactions(Long userId,
+                                       Long accountId,
+                                       Long categoryId,
+                                       String categoryType,
+                                       LocalDate startDate,
+                                       LocalDate endDate,
+                                       Pageable pageable);
 
     List<Transaction> getRecentTransactions(Long id);
 
