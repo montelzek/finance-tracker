@@ -17,10 +17,42 @@
             justify-content: center;
             align-items: center;
             width: 100%;
+            color: #212122;
         }
 
-        .nav-pills .nav-link.active {
-            background-color: #cdcdce;
+        #addingTransactionModal .nav-pills .nav-link {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 !important;
+            padding: 6px 10px;
+            width: 100%;
+            color: #212122;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+        }
+
+        #addingTransactionModal .nav-pills .nav-link:hover {
+            background-color: #e9ecef;
+            color: #212122;
+        }
+
+        #addingTransactionModal #expensePill.active {
+            background-color: #E74C3CFF;
+            color: white !important;
+            border-color: #E74C3CFF;
+        }
+
+        #addingTransactionModal #incomePill.active {
+            background-color: #2ECC71FF;
+            color: white !important;
+            border-color: #2ECC71FF;
+        }
+
+        #addingTransactionModal #goalPill.active {
+            background-color: #F1C40FFF;
+            color: white !important;
+            border-color: #F1C40FFF;
         }
 
         a {
@@ -265,17 +297,17 @@
                 <h1 class="modal-title fs-5" id="staticBackdropLabel">Add Transaction</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body px-3">
 
-                <ul class="nav nav-pills nav-fill mb-3 me-3" id="transactionTypeTabs">
-                    <li class="nav-item">
-                        <button class="nav-link active text-danger border border-dark" data-bs-toggle="tab" data-bs-target="#expense" type="button">Expense</button>
+                <ul class="nav nav-pills row g-2 mb-3" id="transactionTypeTabs">
+                    <li class="col">
+                        <button class="nav-link active border border-dark w-100" id="expensePill" data-bs-toggle="tab" data-bs-target="#expense" type="button">Expense</button>
                     </li>
-                    <li class="nav-item">
-                        <button class="nav-link text-success border border-dark" data-bs-toggle="tab" data-bs-target="#income" type="button">Income</button>
+                    <li class="col">
+                        <button class="nav-link border border-dark w-100" id="incomePill" data-bs-toggle="tab" data-bs-target="#income" type="button">Income</button>
                     </li>
-                    <li class="nav-item">
-                        <button class="nav-link text-warning border border-dark" data-bs-toggle="tab" data-bs-target="#goal" type="button">Goal</button>
+                    <li class="col">
+                        <button class="nav-link border border-dark w-100" id="goalPill" data-bs-toggle="tab" data-bs-target="#goal" type="button">Goal</button>
                     </li>
                 </ul>
 
