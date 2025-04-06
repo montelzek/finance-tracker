@@ -18,4 +18,8 @@ public interface UserService {
     User save(User user);
 
     Boolean existsByEmail(String email);
+
+    void grantPremiumRole(Long userId);
+
+    void revokePremiumRole(Long userId);
 }
