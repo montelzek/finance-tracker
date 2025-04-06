@@ -21,7 +21,11 @@ public class SecurityConfig {
                         .requestMatchers("/register", "/login",  "/css/**", "/js/**").permitAll()
                         .requestMatchers("/dashboard").authenticated()
                         .requestMatchers("/reports/**").hasRole("PREMIUM")
-                        .requestMatchers("/admin-panel", "/user/delete").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/admin-panel",
+                                "/user/delete",
+                                "/user/grant-premium",
+                                "/user/revoke-premium").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
