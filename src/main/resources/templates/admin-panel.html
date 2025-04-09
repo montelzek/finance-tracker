@@ -36,17 +36,24 @@
                                 <th>First Name</th>
                                 <th>Last Name</th>
                                 <th>Roles</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="tempUser : ${users}">
+                            <tr th:each="tempUser : ${users}"
+                                th:with="isAdmin=${#sets.contains(tempUser.roles.![name], T(com.montelzek.moneytrack.model.Role.ERole).ROLE_ADMIN)},
+                                         isPremium=${#sets.contains(tempUser.roles.![name], T(com.montelzek.moneytrack.model.Role.ERole).ROLE_PREMIUM)}">
                                 <td class="align-middle text-start">
-                                    <button class="btn btn-sm btn-outline-danger me-2"
+                                    <button th:if="${!isAdmin}"
+                                            class="btn btn-sm btn-outline-danger me-2"
                                             data-bs-toggle="modal"
                                             data-bs-target="#deleteModal"
                                             th:data-delete-url="@{user/delete(userId=${tempUser.id})}">
                                         <i class="bi bi-trash"></i>
                                     </button>
+                                    <span th:if="${isAdmin}" class="btn btn-sm btn-outline-primary me-2" style="pointer-events: none;">
+                                        <i class="bi bi-shield-fill"></i>
+                                    </span>
                                     <span th:text="${tempUser.email}"></span>
                                 </td>
                                 <td class="text-center">
@@ -57,9 +64,29 @@
                                 </td>
                                 <td class="text-center">
                                     <span th:each="role, roleStat : ${tempUser.roles}">
-                                        <span th:text="${#strings.replace(role.name, 'ROLE_', '')}"></span>
-                                        <span th:if="${!roleStat.last}">, </span>
+                                        <span th:switch="${role.name}">
+                                            <span th:case="${T(com.montelzek.moneytrack.model.Role.ERole).ROLE_ADMIN}"
+                                                  class="badge bg-danger">ADMIN</span>
+                                            <span th:case="${T(com.montelzek.moneytrack.model.Role.ERole).ROLE_PREMIUM}"
+                                                  class="badge bg-warning text-dark">PREMIUM</span>
+                                            <span th:case="${T(com.montelzek.moneytrack.model.Role.ERole).ROLE_USER}"
+                                                  class="badge bg-secondary">USER</span>
+                                        </span>
                                     </span>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div th:if="${!isAdmin}">
+                                        <form th:if="${!isPremium}" th:action="@{/user/grant-premium}" method="post" class="d-inline">
+                                            <input type="hidden" name="userId" th:value="${tempUser.id}" />
+                                            <button type="submit" class="btn btn-sm btn-success">Grant Premium</button>
+                                        </form>
+
+                                        <form th:if="${isPremium}" th:action="@{/user/revoke-premium}" method="post" class="d-inline">
+                                            <input type="hidden" name="userId" th:value="${tempUser.id}" />
+                                            <button type="submit" class="btn btn-sm btn-warning text-dark">Revoke Premium</button>
+                                        </form>
+                                    </div>
+                                    <span th:if="${isAdmin}" class="text-muted fst-italic">Admin</span>
                                 </td>
                             </tr>
                         </tbody>

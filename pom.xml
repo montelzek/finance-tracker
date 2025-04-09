@@ -132,7 +132,7 @@
 				<configuration>
 					<url>jdbc:postgresql://localhost:5432/moneytracker</url>
 					<user>postgres</user>
-					<password>Os.a12345</password>
+					<password>password</password>
 				</configuration>
 			</plugin>
 		</plugins>

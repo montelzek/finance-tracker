@@ -14,9 +14,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -39,6 +41,7 @@ public class UserControllerTest {
                 .id(1L)
                 .email("test@example.com")
                 .password("password")
+                .roles(new HashSet<>())
                 .build();
     }
 
@@ -52,6 +55,7 @@ public class UserControllerTest {
         mockMvc.perform(get("/admin-panel"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("admin-panel"))
+                .andExpect(model().attributeExists("ERole"))
                 .andExpect(model().attributeExists("users"));
 
         verify(userService).findAll();
@@ -66,7 +70,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser(roles = {"ADMIN"})
-    public void deleteAccount_adminUser_shouldDeleteAndRedirect() throws Exception {
+    public void deleteUser_adminUser_shouldDeleteAndRedirect() throws Exception {
         // Arrange
         doNothing().when(userService).deleteById(testUser.getId());
 
@@ -81,7 +85,7 @@ public class UserControllerTest {
 
     @Test
     @WithMockUser
-    public void deleteAccount_userIsNotAdmin_shouldReturnForbidden() throws Exception {
+    public void deleteUser_userIsNotAdmin_shouldReturnForbidden() throws Exception {
         // Act & Assert
         mockMvc.perform(get("/user/delete")
                         .param("userId", String.valueOf(testUser.getId())))
@@ -90,4 +94,57 @@ public class UserControllerTest {
         verify(userService, never()).deleteById(anyLong());
     }
 
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void grantPremium_adminUser_shouldGrantAndRedirect() throws Exception {
+        // Arrange
+        doNothing().when(userService).grantPremiumRole(testUser.getId());
+
+        // Act & Assert
+        mockMvc.perform(post("/user/grant-premium")
+                        .param("userId", String.valueOf(testUser.getId()))
+                        .with(csrf()))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/admin-panel"));
+
+        verify(userService).grantPremiumRole(testUser.getId());
+    }
+
+    @Test
+    @WithMockUser
+    public void grantPremium_userIsNotAdmin_shouldReturnForbidden() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post("/user/grant-premium")
+                        .param("userId", String.valueOf(testUser.getId())))
+                .andExpect(status().isForbidden());
+
+        verify(userService, never()).grantPremiumRole(anyLong());
+    }
+
+    @Test
+    @WithMockUser(roles = {"ADMIN"})
+    public void revokePremium_adminUser_shouldRevokeAndRedirect() throws Exception {
+        // Arrange
+        doNothing().when(userService).revokePremiumRole(testUser.getId());
+
+        // Act & Assert
+        mockMvc.perform(post("/user/revoke-premium")
+                        .param("userId", String.valueOf(testUser.getId()))
+                        .with(csrf()))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("/admin-panel"));
+
+        verify(userService).revokePremiumRole(testUser.getId());
+    }
+
+    @Test
+    @WithMockUser
+    public void revokePremium_userIsNotAdmin_shouldReturnForbidden() throws Exception {
+        // Act & Assert
+        mockMvc.perform(post("/user/revoke-premium")
+                        .param("userId", String.valueOf(testUser.getId())))
+                .andExpect(status().isForbidden());
+
+        verify(userService, never()).revokePremiumRole(anyLong());
+    }
 }
