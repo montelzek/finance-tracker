@@ -1,6 +1,6 @@
 INSERT INTO users (id, email, password, first_name, last_name, created_at) VALUES
-(nextval('users_id_seq'), 'admin@moneytrack.com', '$2a$12$oiKeIVw.0oBbqeYH7v4J2eInRfsG/LXtO6/guu.OK2/XQkngjl.ne', 'Jordan', 'Belfort', NOW()),
-(nextval('users_id_seq'), 'user@moneytrack.com', '$2a$12$QbQ5cUPNmA93AiRxAGz91ux0KJ41xoDwyJl4ZTyzVBjaAHLKGBq8C', 'Jane', 'Doe', NOW());
+(nextval('users_id_seq'), 'admin@financetracker.com', '$2a$12$oiKeIVw.0oBbqeYH7v4J2eInRfsG/LXtO6/guu.OK2/XQkngjl.ne', 'Jordan', 'Belfort', NOW()),
+(nextval('users_id_seq'), 'user@finacnetracker.com', '$2a$12$QbQ5cUPNmA93AiRxAGz91ux0KJ41xoDwyJl4ZTyzVBjaAHLKGBq8C', 'Jane', 'Doe', NOW());
 
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 3);
 INSERT INTO user_roles (user_id, role_id) VALUES (2, 1);
