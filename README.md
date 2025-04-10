@@ -143,7 +143,7 @@ Database schema management and versioning are handled by **Flyway**.
         ```
     *   **Using JAR:**
         ```bash
-        java -jar target/finance-tracker-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+        java -jar target/moneytrack-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
         ```
 
 6.  **Access the Application:** Open your web browser and navigate to `http://localhost:8080`.
