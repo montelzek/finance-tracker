@@ -121,7 +121,7 @@ Database schema management and versioning are handled by **Flyway**.
 1.  **Clone the repository:**
     ```bash
     git clone git@github.com:montelzek/finance-tracker.git
-    cd moneytrack
+    cd finance-tracker
     ```
 2.  **Set up PostgreSQL:**
     *   Ensure your PostgreSQL server is running.
@@ -143,7 +143,7 @@ Database schema management and versioning are handled by **Flyway**.
         ```
     *   **Using JAR:**
         ```bash
-        java -jar target/moneytrack-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+        java -jar target/finance-tracker-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
         ```
 
 6.  **Access the Application:** Open your web browser and navigate to `http://localhost:8080`.
@@ -153,20 +153,20 @@ Database schema management and versioning are handled by **Flyway**.
 1.  **Clone the repository:** (If not already done)
     ```bash
     git clone git@github.com:montelzek/finance-tracker.git
-    cd moneytrack
+    cd finance-tracker
     ```
 2.  **Build and Start Containers:**
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 3.  **Access the Application:** Open your web browser and navigate to `http://localhost:8080`.
 4.  **Stopping the Application:**
     ```bash
-    docker-compose down
+    docker compose down
     ```
     To also remove volumes:
     ```bash
-    docker-compose down -v
+    docker compose down -v
     ```
     
 ## Testing
