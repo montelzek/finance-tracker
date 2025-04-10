@@ -9,7 +9,7 @@ INSERT INTO accounts (id, name, account_type, balance, currency, created_at, use
 (nextval('accounts_id_seq'), 'Main Checking Account', 'CHECKING', 5250.75, 'USD', NOW() - INTERVAL '7 month', 2),
 (nextval('accounts_id_seq'), 'Savings Fund', 'SAVINGS', 15800.00, 'USD', NOW() - INTERVAL '6 month', 2),
 (nextval('accounts_id_seq'), 'Everyday Card', 'CREDIT_CARD', -450.20, 'USD', NOW() - INTERVAL '5 month', 2),
-(nextval('accounts_id_seq'), 'Holiday Savings EUR', 'SAVINGS', 2100.50, 'EUR', NOW() - INTERVAL '4 month', 2),
+(nextval('accounts_id_seq'), 'Holiday Savings', 'SAVINGS', 2100.50, 'EUR', NOW() - INTERVAL '4 month', 2),
 (nextval('accounts_id_seq'), 'Cash Wallet', 'CASH', 150.00, 'PLN', NOW() - INTERVAL '3 month', 2);
 
 INSERT INTO financial_goals (id, name, target_amount, current_amount, is_achieved, created_at, user_id) VALUES
