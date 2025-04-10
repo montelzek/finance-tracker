@@ -1,6 +1,6 @@
 INSERT INTO users (id, email, password, first_name, last_name, created_at) VALUES
-(nextval('users_id_seq'), 'admin@moneytrack.com', '$2a$12$oiKeIVw.0oBbqeYH7v4J2eInRfsG/LXtO6/guu.OK2/XQkngjl.ne', 'Admin', 'User', NOW()),
-(nextval('users_id_seq'), 'user@moneytrack.com', '$2a$12$QbQ5cUPNmA93AiRxAGz91ux0KJ41xoDwyJl4ZTyzVBjaAHLKGBq8C', 'Regular', 'User', NOW());
+(nextval('users_id_seq'), 'admin@moneytrack.com', '$2a$12$oiKeIVw.0oBbqeYH7v4J2eInRfsG/LXtO6/guu.OK2/XQkngjl.ne', 'Jordan', 'Belfort', NOW()),
+(nextval('users_id_seq'), 'user@moneytrack.com', '$2a$12$QbQ5cUPNmA93AiRxAGz91ux0KJ41xoDwyJl4ZTyzVBjaAHLKGBq8C', 'Jane', 'Doe', NOW());
 
 INSERT INTO user_roles (user_id, role_id) VALUES (1, 3);
 INSERT INTO user_roles (user_id, role_id) VALUES (2, 1);
@@ -13,7 +13,7 @@ INSERT INTO accounts (id, name, account_type, balance, currency, created_at, use
 (nextval('accounts_id_seq'), 'Cash Wallet', 'CASH', 150.00, 'PLN', NOW() - INTERVAL '3 month', 2);
 
 INSERT INTO financial_goals (id, name, target_amount, current_amount, is_achieved, created_at, user_id) VALUES
-(nextval('financial_goals_id_seq'), 'New Car Down Payment', 10000.00, 4000.00, false, NOW() - INTERVAL '5 month', 2),
+(nextval('financial_goals_id_seq'), 'iPhone', 1200.00, 500.00, false, NOW() - INTERVAL '5 month', 2),
 (nextval('financial_goals_id_seq'), 'Emergency Fund', 5000.00, 4000.00, false, NOW() - INTERVAL '4 month', 2),
 (nextval('financial_goals_id_seq'), 'Vacation Trip', 3000.00, 500.00, false, NOW() - INTERVAL '3 month', 2);
 
@@ -39,7 +39,8 @@ INSERT INTO transactions (account_id, amount, date, description, category_id, cr
 (3, 95.80, '2025-03-22', 'Shopping - Clothes', 14, NOW(), NULL, NULL),
 (3, 130.15, '2025-03-25', 'Supermarket', 6, NOW(), NULL, 1),
 (2, 250.00, '2025-03-28', 'Saving for Emergency Fund', 15, NOW(), 2, NULL),
-(4, 150.00, '2025-03-30', 'Weekend Trip Food (EUR)', 11, NOW(), NULL, 2);
+(4, 150.00, '2025-03-30', 'Weekend Trip Food (EUR)', 11, NOW(), NULL, 2),
+(1, 4500.00, '2025-04-01', 'April Salary', 1, NOW(), NULL, NULL);
 
 INSERT INTO transactions (account_id, amount, date, description, category_id, created_at, financial_goal_id, budget_id) VALUES
 (1, 4500.00, '2025-02-01', 'February Salary', 1, NOW() - INTERVAL '1 month', NULL, NULL),
