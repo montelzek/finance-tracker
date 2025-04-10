@@ -1,47 +1,59 @@
-# MoneyTrack - Personal Finance Tracker
+# FinanceTracker
 
 ## Overview
 
-MoneyTrack is a web application designed to help users manage their personal finances effectively. It allows users to track their accounts, transactions, set budgets, and monitor progress towards financial goals. The application supports multiple currencies and provides visualizations of financial data.
+FinanceTracker is a web application designed to help users manage their personal finances effectively. It allows users to track their accounts, transactions, set budgets, and monitor progress towards financial goals. The application supports multiple currencies and provides visualizations of financial data.
 
 ## Features
 
 *   **User Management:**
-    *   Secure user registration and login.
     *   Role-based access control (USER, PREMIUM, ADMIN).
-    *   Admin panel for managing users (view, delete, grant/revoke PREMIUM role).
+    *   Secure user registration and login. <br/><br/>
+    <table>
+        <tr>
+          <td><img src="images/register.png" alt="Registration page"></td>
+          <td><img src="images/login.png" alt="Login page"></td>
+        </tr>
+    </table><br/><br/>
+    *   Admin panel for managing users (view, delete, grant/revoke PREMIUM role). <br/><br/>
+    <img src="images/admin-panel.png" alt="Admin panel"> <br/><br/>
 *   **Account Management:**
     *   Create, Read, Update, and Delete (CRUD) financial accounts.
     *   Supports various account types (SAVINGS, CHECKING, CREDIT_CARD, CASH).
     *   Handles multiple currencies (USD, EUR, PLN, GBP, CHF, JPY).
-    *   Calculates and displays the total balance across all accounts, converted to a base currency (USD).
+    *   Calculates and displays the total balance across all accounts, converted to a base currency (USD). <br/><br/>
+    ![Accounts page](images/accounts.png) <br/><br/>
 *   **Transaction Tracking:**
     *   Log income, expenses, and contributions towards financial goals.
     *   Link transactions to specific accounts and categories.
     *   Automatic account balance updates based on transactions.
     *   Filter transactions by account, category, type, and date range.
-    *   Paginated view of transactions with sorting options.
+    *   Paginated view of transactions with sorting options. <br/><br/>
+    ![Transactions page](images/transactions-list.png) <br/><br/>
 *   **Budgeting:**
     *   Create, Read, Update, and Delete (CRUD) budgets for specific expense categories.
     *   Define budget periods (start and end dates).
     *   Automatically track spending against budgets based on relevant expense transactions.
     *   Visual progress bars to show budget utilization.
-    *   Calculates spent amount in a base currency (USD) for consistent tracking across different account currencies.
+    *   Calculates spent amount in a base currency (USD) for consistent tracking across different account currencies. <br/><br/>
+    ![Budgets page](images/budgets.png) <br/><br/>
 *   **Financial Goals:**
     *   Set up, track, and manage personal financial goals (e.g., saving for a down payment).
     *   Allocate specific transactions towards goals.
     *   Automatically track the current amount saved towards each goal, converted to a base currency (USD).
-    *   Visual progress bars and achievement status tracking.
+    *   Visual progress bars and achievement status tracking. <br/><br/>
+    ![Financial Goals page](images/goals.png) <br/><br/>
 *   **Dashboard:**
     *   Centralized overview of the user's financial status.
     *   Displays total balance, recent income/expenses (last 30 days).
     *   Charts visualizing expenses by category and monthly income/expense trends.
     *   Lists recent transactions, active budgets, and financial goal progress.
-    *   Shows current currency exchange rates (fetched from an external API).
+    *   Shows current currency exchange rates (fetched from an external API). <br/><br/>
+    ![Dashboard](images/dashboard.png) <br/><br/>
 *   **Reporting (Premium Feature):**
     *   Dedicated section for more advanced financial reports (currently Work in Progress). Access restricted to PREMIUM.
 *   **Currency Conversion:**
-    *   Integrates with an external API (exchangerate-api.com) to fetch real-time exchange rates.
+    *   Integrates with an external API (exchangerate-api.com) to fetch real-time exchange rates (Rates are updated every time the application is launched, but the actual change in rates can be seen at most once a day due to the limitations of the free plan on                  ExchangeRateAPI in which rates updates occur once every 24 hours).
     *   Automatically converts amounts to USD for consistent aggregation in total balance, budgets, and financial goals.
 
 ## Tech Stack
@@ -65,7 +77,21 @@ MoneyTrack is a web application designed to help users manage their personal fin
     *   Maven
 *   **Containerization:**
     *   Docker, Docker Compose
+ 
+## Configuration
 
+*   `application.properties`: Contains common settings and default profile activation (`prod`). Includes the API key for currency exchange.
+*   `application-prod.properties`: Contains settings specific to the production environment, the PostgreSQL database connection details for local execution.
+*   `application-test.properties`: Contains settings for the testing environment, using an in-memory H2 database and disabling Flyway.
+
+## Database Migrations
+
+Database schema management and versioning are handled by **Flyway**.
+
+*   Migration scripts are located in `src/main/resources/db/migration`.
+*   Scripts are named using the convention `V<VERSION>__<DESCRIPTION>.sql`.
+*   When the application starts with the `prod` profile active, Flyway automatically checks the database schema version and applies any pending migration scripts in order.
+    
 ## Running the Application
 
 ### Prerequisites
@@ -130,6 +156,14 @@ MoneyTrack is a web application designed to help users manage their personal fin
     ```bash
     docker-compose down -v
     ```
+    
+## Testing
+
+*   To run all tests, use the Maven command:
+    ```bash
+    ./mvnw test
+    ```
+    
 ## Future Enhancements
 
 *   **Recurring Transactions:** Allow users to define recurring income and expenses (e.g., salary, rent, subscriptions) to automate transaction logging.
@@ -137,3 +171,7 @@ MoneyTrack is a web application designed to help users manage their personal fin
 *   **Data Import/Export:** Add support for importing transactions from bank statements (CSV, OFX, QIF formats) and exporting user data.
 *   **Enhanced Security:** Implement Two-Factor Authentication (2FA) for user accounts.
 *   **Custom categories:** Allow users to add custom categories.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
