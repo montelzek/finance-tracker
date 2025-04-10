@@ -1,5 +1,17 @@
 # FinanceTracker
 
+## Table of contents
+
+1.  [Overview](#overview)
+2.  [Features](#features)
+3.  [Tech Stack](#tech-stack)
+4.  [Configuration](#configuration)
+5.  [Database Migrations](#database-migrations)
+6.  [Running the Application](#running-the-application)
+7.  [Testing](#testing)
+8.  [Future Enhancements](#future-enhancements)
+9.  [License](#license)
+
 ## Overview
 
 FinanceTracker is a web application designed to help users manage their personal finances effectively. It allows users to track their accounts, transactions, set budgets, and monitor progress towards financial goals. The application supports multiple currencies and provides visualizations of financial data.
