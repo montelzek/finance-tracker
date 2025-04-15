@@ -85,6 +85,9 @@ FinanceTracker is a web application designed to help users manage their personal
     *   **UI Framework:** Bootstrap 5
     *   **Languages:** HTML, CSS, JavaScript
     *   **Charting:** Chart.js
+*   **Testing:**
+    *   JUnit 5 
+    *   MockMvc 
 *   **Build & Dependency Management:**
     *   Maven
 *   **Containerization:**
@@ -111,7 +114,7 @@ Database schema management and versioning are handled by **Flyway**.
 *   **Git**
 *   **JDK 23**
 *   **Maven**
-*   **PostgreSQL:**
+*   **PostgreSQL**
 #### Docker setup
 *   **Git**
 *   **Docker & Docker Compose:** 
