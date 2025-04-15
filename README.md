@@ -1,5 +1,17 @@
 # FinanceTracker
 
+## Table of contents
+
+1.  [Overview](#overview)
+2.  [Features](#features)
+3.  [Tech Stack](#tech-stack)
+4.  [Configuration](#configuration)
+5.  [Database Migrations](#database-migrations)
+6.  [Running the Application](#running-the-application)
+7.  [Testing](#testing)
+8.  [Future Enhancements](#future-enhancements)
+9.  [License](#license)
+
 ## Overview
 
 FinanceTracker is a web application designed to help users manage their personal finances effectively. It allows users to track their accounts, transactions, set budgets, and monitor progress towards financial goals. The application supports multiple currencies and provides visualizations of financial data.
@@ -73,6 +85,9 @@ FinanceTracker is a web application designed to help users manage their personal
     *   **UI Framework:** Bootstrap 5
     *   **Languages:** HTML, CSS, JavaScript
     *   **Charting:** Chart.js
+*   **Testing:**
+    *   JUnit 5 
+    *   MockMvc 
 *   **Build & Dependency Management:**
     *   Maven
 *   **Containerization:**
@@ -99,7 +114,7 @@ Database schema management and versioning are handled by **Flyway**.
 *   **Git**
 *   **JDK 23**
 *   **Maven**
-*   **PostgreSQL:**
+*   **PostgreSQL**
 #### Docker setup
 *   **Git**
 *   **Docker & Docker Compose:** 
@@ -109,7 +124,7 @@ Database schema management and versioning are handled by **Flyway**.
 1.  **Clone the repository:**
     ```bash
     git clone git@github.com:montelzek/finance-tracker.git
-    cd moneytrack
+    cd finance-tracker
     ```
 2.  **Set up PostgreSQL:**
     *   Ensure your PostgreSQL server is running.
@@ -141,20 +156,20 @@ Database schema management and versioning are handled by **Flyway**.
 1.  **Clone the repository:** (If not already done)
     ```bash
     git clone git@github.com:montelzek/finance-tracker.git
-    cd moneytrack
+    cd finance-tracker
     ```
 2.  **Build and Start Containers:**
     ```bash
-    docker-compose up --build
+    docker compose up --build
     ```
 3.  **Access the Application:** Open your web browser and navigate to `http://localhost:8080`.
 4.  **Stopping the Application:**
     ```bash
-    docker-compose down
+    docker compose down
     ```
     To also remove volumes:
     ```bash
-    docker-compose down -v
+    docker compose down -v
     ```
     
 ## Testing
